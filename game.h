@@ -9,11 +9,14 @@ private:
     Poker flop[3];
     Poker turn;
     Poker river;
+    Poker **hands;
+    int playerNum;
 
     void init();
     void shuffle();
+    void dealCards(int pn);
 public:
-    Game();
+    Game(int pn = 3);
     ~Game();
 
     void show() const;

@@ -1,7 +1,7 @@
 #include "game.h"
 
 template <class ElemType >
-void Swap(ElemType &e1, ElemType &e2)
+inline void Swap(ElemType &e1, ElemType &e2)
 // 操作结果: 交换e1, e2之值
 {
 	ElemType temp;		// 临时变量
@@ -26,26 +26,55 @@ void Game::shuffle() {
         while ((r = distrib(engine)) == i);
         Swap(pile[i], pile[r]);
     }
-    
+}
 
+void Game::dealCards (int pn) {
+    playerNum = pn;
+    hands = new Poker*[playerNum];
+    for (int i = 0; i < playerNum; i++)
+    {
+        hands[i] = new Poker[2];
+        hands[i][0] = pile[i];
+        hands[i][1] = pile[i+playerNum];
+    }
+    int j = 2 * playerNum;
+    for (int k = 0; k < 3; k++)
+    {
+        flop[k] = pile[j + k + 1];
+    }
+    turn = pile[j + 5];
+    river = pile[j + 7];
+    
 }
 
 
-Game::Game() {
+Game::Game(int pn) {
     init();
     shuffle();
-
+    dealCards(pn);
 }
 
 Game::~Game() {
     delete[] pile;
+    delete[] hands;
 }
 
 
 void Game::show() const {
-    for (int i = 0; i < 52; i++)
-    {
-        std::cout << pile[i] << std::endl;
+    std::cout << "========================================================" << std::endl;
+    std::cout << "Public: " << std::endl;
+    std::cout << "\t\t    ";
+    for (int i = 0; i < 3; i++) {
+        std::cout << flop[i] << ' ';
     }
-    
+    std::cout << turn << ' ' << river << std::endl;
+    std::cout << "\n========================================================" << std::endl;
+    for (int i = 0; i < playerNum; i++) {
+        std::cout << "Player" << i + 1 << ": ";
+        for (int j = 0; j < 2; j++) {
+            std::cout << hands[i][j];
+        }
+        std::cout << "\t\t\t\tWin: %" << std::endl;
+    }
+    std::cout << "========================================================" << std::endl;
 }
