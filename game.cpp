@@ -33,7 +33,7 @@ void Game::shuffle() {
 
 Game::Game() {
     init();
-
+    shuffle();
 
 }
 
