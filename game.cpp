@@ -68,7 +68,7 @@ void Game::show() const {
         std::cout << flop[i] << ' ';
     }
     std::cout << turn << ' ' << river << std::endl;
-    std::cout << "\n========================================================" << std::endl;
+    std::cout << "\n--------------------------------------------------------" << std::endl;
     for (int i = 0; i < playerNum; i++) {
         std::cout << "Player" << i + 1 << ": ";
         for (int j = 0; j < 2; j++) {
