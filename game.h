@@ -15,5 +15,7 @@ private:
 public:
     Game();
     ~Game();
+
+    void show() const;
 };
 #endif
