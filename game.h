@@ -11,6 +11,7 @@ private:
     Poker river;
     Poker **hands;
     int playerNum;
+    int stateCode;  // 0, 1, 2, 3
 
     void init();
     void shuffle();

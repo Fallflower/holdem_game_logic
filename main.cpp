@@ -1,7 +1,7 @@
 #include "game.h"
 
 int main() {
-    Game g;
+    Game g(5);
     g.show();
 
     return 0;
