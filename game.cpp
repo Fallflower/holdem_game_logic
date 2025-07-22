@@ -66,19 +66,19 @@ Game::~Game() {
 
 
 void Game::show() const {
-    std::cout << "========================================================" << std::endl;
-    std::cout << "Public: " << std::endl;
-    std::cout << "\t\t    ";
+    std::cout << "================================================================" << std::endl;
+    std::cout << "  Public: " << std::endl;
+    std::cout << "\t\t\t  ";
     for (int i = 0; i < 3; i++) {
         std::cout << flop[i] << ' ';
     }
     std::cout << turn << ' ' << river << std::endl;
-    std::cout << "\n--------------------------------------------------------" << std::endl;
+    std::cout << "\n----------------------------------------------------------------" << std::endl;
     for (int i = 0; i < playerNum; i++) {
-        std::cout << "Player" << i + 1 << " (" << pos[i] << "): ";
+        std::cout << "  Player" << i + 1 << " (" << pos[i] << "):   ";
         for (int j = 0; j < 2; j++)
             std::cout << hands[i][j] << ' ';
         std::cout << "\t\t\t\tWin: %" << std::endl;
     }
-    std::cout << "========================================================" << std::endl;
+    std::cout << "================================================================" << std::endl;
 }
