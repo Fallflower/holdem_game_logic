@@ -28,30 +28,29 @@ void Game::shuffle() {
     }
 }
 
-void Game::dealCards (int pn) {
-    playerNum = pn;
+void Game::dealCards () {
     hands = new Poker*[playerNum];
     for (int i = 0; i < playerNum; i++)
     {
-        hands[i] = new Poker[2];
-        hands[i][0] = pile[i];
-        hands[i][1] = pile[i+playerNum];
+        int pi = (dealer + i) % playerNum; // deal begin from dealer
+        hands[pi] = new Poker[2];
+        hands[pi][0] = pile[i];
+        hands[pi][1] = pile[i+playerNum];
     }
     int j = 2 * playerNum;
     for (int k = 0; k < 3; k++)
-    {
         flop[k] = pile[j + k + 1];
-    }
     turn = pile[j + 5];
     river = pile[j + 7];
-    
 }
 
 
-Game::Game(int pn) {
+Game::Game(int pn, int d): playerNum(pn), dealer(d) {
+    pos = Position(pn);
     init();
     shuffle();
-    dealCards(pn);
+    dealCards();
+    stateCode = 0;
 }
 
 Game::~Game() {
@@ -70,7 +69,8 @@ void Game::show() const {
     std::cout << turn << ' ' << river << std::endl;
     std::cout << "\n--------------------------------------------------------" << std::endl;
     for (int i = 0; i < playerNum; i++) {
-        std::cout << "Player" << i + 1 << ": ";
+        int pi = (dealer + i) % playerNum; // deal begin from dealer
+        std::cout << "Player" << i + 1 << " (" << pos[pi] << "): ";
         for (int j = 0; j < 2; j++) {
             std::cout << hands[i][j];
         }

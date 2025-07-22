@@ -1,6 +1,7 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 #include "poker.h"
+#include "position.h"
 #include<random>
 class Game
 {
@@ -10,14 +11,18 @@ private:
     Poker turn;
     Poker river;
     Poker **hands;
+
     int playerNum;
     int stateCode;  // 0, 1, 2, 3
+    int dealer;
+    Position pos;
 
     void init();
     void shuffle();
-    void dealCards(int pn);
+    void dealCards();
+
 public:
-    Game(int pn = 3);
+    Game(int pn = 3, int d = 0);
     ~Game();
 
     void show() const;
