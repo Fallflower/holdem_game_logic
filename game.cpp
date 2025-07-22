@@ -38,8 +38,13 @@ void Game::dealCards () {
     {
         int pi = (dealer + i) % playerNum; // deal begin from dealer
         hands[pi] = new Poker[2];
-        hands[pi][0] = pile[i];
-        hands[pi][1] = pile[i+playerNum];
+        if (pile[i] > pile[i + playerNum]) {
+            hands[pi][0] = pile[i];
+            hands[pi][1] = pile[i + playerNum];
+        } else {
+            hands[pi][1] = pile[i];
+            hands[pi][0] = pile[i + playerNum];
+        }
     }
     int j = 2 * playerNum;
     for (int k = 0; k < 3; k++)

@@ -30,10 +30,12 @@ extern const std::map<char, CARDNUM> numap;
 
 struct Poker
 {
+private:
 	SUIT suit;
 	CARDNUM cnum;
-
+public:
 	Poker( CARDNUM c = A, SUIT s = HEA);
+	friend bool operator>(const Poker &p1, const Poker &p2);
     std::ostream& output(std::ostream& out) const;
 };
 

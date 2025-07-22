@@ -25,6 +25,10 @@ const std::map<char, CARDNUM> numap = {
 
 Poker::Poker(CARDNUM c, SUIT s) : suit(s), cnum(c) {}
 
+bool operator>(const Poker& p1, const Poker& p2) {
+    return p1.cnum > p2.cnum;
+}
+
 std::ostream &Poker::output(std::ostream &out) const
 {
     // 输出点数
