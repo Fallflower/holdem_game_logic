@@ -9,7 +9,11 @@ inline void Swap(ElemType &e1, ElemType &e2)
 	temp = e1;	e1 = e2;  e2 = temp;
 }
 
-void Game::init() {
+void Game::initPosition() {
+    pos = Position(playerNum, dealer);
+}
+
+void Game::initPile() {
     pile = new Poker[52];
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 13; j++)
@@ -46,8 +50,8 @@ void Game::dealCards () {
 
 
 Game::Game(int pn, int d): playerNum(pn), dealer(d) {
-    pos = Position(pn);
-    init();
+    initPosition();
+    initPile();
     shuffle();
     dealCards();
     stateCode = 0;
@@ -55,6 +59,8 @@ Game::Game(int pn, int d): playerNum(pn), dealer(d) {
 
 Game::~Game() {
     delete[] pile;
+    for (int i = 0; i < playerNum; i++)
+        delete[] hands[i];
     delete[] hands;
 }
 
@@ -69,11 +75,9 @@ void Game::show() const {
     std::cout << turn << ' ' << river << std::endl;
     std::cout << "\n--------------------------------------------------------" << std::endl;
     for (int i = 0; i < playerNum; i++) {
-        int pi = (dealer + i) % playerNum; // deal begin from dealer
-        std::cout << "Player" << i + 1 << " (" << pos[pi] << "): ";
-        for (int j = 0; j < 2; j++) {
-            std::cout << hands[i][j];
-        }
+        std::cout << "Player" << i + 1 << " (" << pos[i] << "): ";
+        for (int j = 0; j < 2; j++)
+            std::cout << hands[i][j] << ' ';
         std::cout << "\t\t\t\tWin: %" << std::endl;
     }
     std::cout << "========================================================" << std::endl;

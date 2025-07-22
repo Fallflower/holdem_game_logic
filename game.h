@@ -17,7 +17,8 @@ private:
     int dealer;
     Position pos;
 
-    void init();
+    void initPosition();
+    void initPile();
     void shuffle();
     void dealCards();
 

@@ -7,8 +7,12 @@ class Position
 {
 private:
     std::vector<std::string> poss;
+
+    void init(int pn);
+    void adjust(int pn, int di);
+
 public:
-    Position(int pn = 3);
+    Position(int pn = 3, int di = 1);
 
     std::string operator[](int pi) const;
 

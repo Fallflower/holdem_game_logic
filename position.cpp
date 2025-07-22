@@ -1,6 +1,6 @@
 #include "position.h"
 
-Position::Position(int pn) {
+void Position::init(int pn) {
     poss = {" S B ", " B B "};
     switch (pn)
     {
@@ -19,6 +19,19 @@ Position::Position(int pn) {
     if (pn > 7)
         for (int i = 1; i <= pn - 7; i++)
             poss.insert(poss.begin() + 2 + i, "UTG+" + std::to_string(i));
+}
+
+void Position::adjust(int pn, int di) {
+    std::vector<std::string> temp;
+    for (int i = 0; i < pn; i++)
+        temp.push_back(poss[(pn - 1 - di + i) % pn]);
+    poss = temp; 
+}
+
+
+Position::Position(int pn, int di) {
+    init(pn);
+    adjust(pn, di); // 调整顺序使其与game中的玩家顺序对应
 }
 
 std::string Position::operator[](int pi) const {

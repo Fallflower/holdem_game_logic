@@ -1,11 +1,12 @@
 #include "game.h"
 
 int main() {
-    // Game g(5, 1);
-    // g.show();
+    Game g(9, 2);
+    g.show();
 
-    Position p(9);
-    std::cout << p << std::endl;
+    // test
+    // Position p(9, 1);
+    // std::cout << p << std::endl;
 
     return 0;
 }
