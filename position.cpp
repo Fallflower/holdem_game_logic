@@ -34,6 +34,13 @@ Position::Position(int pn, int di) {
     adjust(pn, di); // 调整顺序使其与game中的玩家顺序对应
 }
 
+int Position::find(const std::string& s) const {
+    int i;
+    for (i = 0; i < poss.size(); i++)
+        if (s == poss[i]) break;
+    return i;   // i == playerNum means failed
+}
+
 std::string Position::operator[](int pi) const {
     return poss[pi];
 }

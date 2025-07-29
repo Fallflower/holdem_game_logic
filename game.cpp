@@ -19,6 +19,12 @@ void Game::init() {
     chips = new int[playerNum]{0};
     ftag = new bool[playerNum]{0};
     active = (dealer + 3) % playerNum;
+
+    // commit blinds
+    int sb = pos.find(" S B ");
+    int bb = pos.find(" B B ");
+    chips[sb] = 1;
+    chips[bb] = 2;
 }
 
 void Game::shuffle() {
@@ -108,7 +114,7 @@ void Game::show() const {
         std::cout << "Player" << i + 1 << " (" << pos[i] << "):   ";
         for (int j = 0; j < 2; j++)
             std::cout << hands[i][j] << ' ';
-        std::cout << "\t\t\t\tWin: %" << std::endl;
+        std::cout << "\t" << chips[i] << "\t\tWin: %" << std::endl;
     }
     std::cout << "================================================================" << std::endl;
 }
@@ -118,4 +124,9 @@ int Game::getPot() const {
     for (int i = 0; i < playerNum; i++)
         temp += chips[i];
     return temp;
+}
+
+void Game::bet(const int& chip) {
+    chips[active] = chip;
+    active = (active + 1) % playerNum;
 }

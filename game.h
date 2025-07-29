@@ -24,7 +24,7 @@ private:
 
     int playerNum;
     int stateCode;  // 0, 1, 2, 3
-    int commit[4] = {0, 0, 0, 0};  // Chips commitment of each round
+    int commit[4] = {2, 0, 0, 0};  // Chips commitment of each round and 2 means big blind
     int dealer;
     Position pos;
 
@@ -44,5 +44,6 @@ public:
 
     void show() const;
     int getPot() const;
+    void bet(const int&);
 };
 #endif

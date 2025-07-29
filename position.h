@@ -11,8 +11,10 @@ private:
     void init(int pn);
     void adjust(int pn, int di);
 
+
 public:
     Position(int pn = 3, int di = 1);
+    int find(const std::string&) const;
 
     std::string operator[](int pi) const;
 
