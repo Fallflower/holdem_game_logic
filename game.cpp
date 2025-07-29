@@ -15,6 +15,10 @@ void Game::init() {
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 13; j++)
             pile[i*13+j] = Poker(CARDNUM(j), SUIT(i));
+    
+    chips = new int[playerNum]{0};
+    ftag = new bool[playerNum]{0};
+    active = (dealer + 3) % playerNum;
 }
 
 void Game::shuffle() {
@@ -50,16 +54,42 @@ void Game::dealCards () {
     river = pile[j + 7];
 }
 
+std::string Game::genPubCardStr() const {
+    std::vector<std::string> temp = {"??", "??", "??", "??", "??"};
+    switch (stateCode)
+    {
+    case 3: temp[4] = river.to_string(); [[fallthrough]];
+    case 2: temp[3] = turn.to_string(); [[fallthrough]];
+    case 1:
+        temp[0] = flop[0].to_string();
+        temp[1] = flop[1].to_string();
+        temp[2] = flop[2].to_string();
+        break;
+    default:
+        break;
+    }
+    std::ostringstream oss;
+    for (size_t i = 0; i < temp.size(); i++)
+    {
+        if (i > 0) oss << "  ";
+        oss << temp[i];
+    }
+    return oss.str();
+}
+
 
 Game::Game(int pn, int d): playerNum(pn), dealer(d) {
     init();
     shuffle();
     dealCards();
-    stateCode = 0;
+    stateCode = 3;
 }
 
 Game::~Game() {
+    delete[] chips;
+    delete[] ftag;
     delete[] pile;
+
     for (int i = 0; i < playerNum; i++)
         delete[] hands[i];
     delete[] hands;
@@ -69,17 +99,23 @@ Game::~Game() {
 void Game::show() const {
     std::cout << "================================================================" << std::endl;
     std::cout << "  Public: " << std::endl;
-    std::cout << "\t\t\t";
-    for (int i = 0; i < 3; i++)
-        std::cout << flop[i] << "  ";
-    std::cout << turn << "  ";
-    std::cout << river << std::endl;
-    std::cout << "\n----------------------------------------------------------------" << std::endl;
+    std::cout << "\t\t\t" << genPubCardStr() << std::endl;
+    std::cout << "  State:  " << stateStr[stateCode] << std::endl;
+    std::cout << "----------------------------------------------------------------" << std::endl;
     for (int i = 0; i < playerNum; i++) {
-        std::cout << "  Player" << i + 1 << " (" << pos[i] << "):   ";
+        if (i == active) std::cout << " *";
+        else std::cout << "  ";
+        std::cout << "Player" << i + 1 << " (" << pos[i] << "):   ";
         for (int j = 0; j < 2; j++)
             std::cout << hands[i][j] << ' ';
         std::cout << "\t\t\t\tWin: %" << std::endl;
     }
     std::cout << "================================================================" << std::endl;
+}
+
+int Game::getPot() const {
+    int temp = 0;
+    for (int i = 0; i < playerNum; i++)
+        temp += chips[i];
+    return temp;
 }

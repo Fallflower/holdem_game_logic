@@ -23,7 +23,18 @@ const std::map<char, CARDNUM> numap = {
     {'A', A}
 };
 
+const std::string num_str[] = {
+    "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"
+};
+
+const std::string suit_str[] = {
+    "\u2665", "\u2663", "\u2666", "\u2660"
+};
 Poker::Poker(CARDNUM c, SUIT s) : suit(s), cnum(c) {}
+
+std::string Poker::to_string() const {
+    return num_str[cnum] + suit_str[suit];
+}
 
 bool operator>(const Poker& p1, const Poker& p2) {
     return p1.cnum > p2.cnum;
@@ -31,16 +42,7 @@ bool operator>(const Poker& p1, const Poker& p2) {
 
 std::ostream &Poker::output(std::ostream &out) const
 {
-    // 输出点数
-    static const char* num_str[] = {
-        "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"
-    };
-    out << num_str[cnum];
-    
-    // 输出花色 UTF-8 encoding
-    static const char* suit_str[] = {"\u2665", "\u2663", "\u2666", "\u2660"};
-    out << suit_str[suit];
-    
+    out << to_string();
     return out;
 }
 

@@ -1,6 +1,7 @@
 #ifndef __POKER_H__
 #define __POKER_H__
 #include<iostream>
+#include<string>
 #include<map>
 enum SUIT
 {
@@ -35,6 +36,8 @@ private:
 	CARDNUM cnum;
 public:
 	Poker( CARDNUM c = A, SUIT s = HEA);
+	std::string to_string() const;
+
 	friend bool operator>(const Poker &p1, const Poker &p2);
     std::ostream& output(std::ostream& out) const;
 };
