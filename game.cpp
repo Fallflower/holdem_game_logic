@@ -1,5 +1,7 @@
 #include "game.h"
 
+const std::string stateStr[] = {"preflop", "flop", "turn", "river", "end"};
+
 template <class ElemType >
 inline void Swap(ElemType &e1, ElemType &e2)
 // 操作结果: 交换e1, e2之值
@@ -19,7 +21,6 @@ void Game::init() {
     chips = new int[playerNum]{0};
     ftag = new bool[playerNum]{0};
     active = (dealer + 3) % playerNum;
-
     // commit blinds
     int sb = pos.find(" S B ");
     int bb = pos.find(" B B ");
@@ -60,6 +61,20 @@ void Game::dealCards () {
     river = pile[j + 7];
 }
 
+void Game::checkState() {
+    for (int i = 0; i < playerNum && !ftag[i]; i++)
+    {
+        
+    }
+    
+}
+
+void Game::step() {
+    while (ftag[active]) {
+        active = (active + 1) % playerNum;
+    }
+}
+
 std::string Game::genPubCardStr() const {
     std::vector<std::string> temp = {"??", "??", "??", "??", "??"};
     switch (stateCode)
@@ -88,7 +103,7 @@ Game::Game(int pn, int d): playerNum(pn), dealer(d) {
     init();
     shuffle();
     dealCards();
-    stateCode = 3;
+    stateCode = 0;
 }
 
 Game::~Game() {
@@ -106,7 +121,8 @@ void Game::show() const {
     std::cout << "================================================================" << std::endl;
     std::cout << "  Public: " << std::endl;
     std::cout << "\t\t\t" << genPubCardStr() << std::endl;
-    std::cout << "  State:  " << stateStr[stateCode] << std::endl;
+    std::cout << "   State:  " << stateStr[stateCode] << std::endl;
+    std::cout << "     Pot:  " << getPot() << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl;
     for (int i = 0; i < playerNum; i++) {
         if (i == active) std::cout << " *";
@@ -114,7 +130,11 @@ void Game::show() const {
         std::cout << "Player" << i + 1 << " (" << pos[i] << "):   ";
         for (int j = 0; j < 2; j++)
             std::cout << hands[i][j] << ' ';
-        std::cout << "\t" << chips[i] << "\t\tWin: %" << std::endl;
+        std::cout << "\t" << chips[i];
+        if (ftag[i])
+            std::cout << "\t\t(fold)" << std::endl;
+        else
+            std::cout << "\t\tWin: %" << std::endl;
     }
     std::cout << "================================================================" << std::endl;
 }
@@ -126,7 +146,30 @@ int Game::getPot() const {
     return temp;
 }
 
-void Game::bet(const int& chip) {
-    chips[active] = chip;
+int Game::getState() const {
+    return stateCode;
+}
+
+void Game::fold() {
+    ftag[active] = 1;
+    step();
+}
+
+int Game::call() {
+    int rest = commit[stateCode] - chips[active];
+    chips[active] = commit[stateCode];
     active = (active + 1) % playerNum;
+    step();
+    return rest;
+}
+
+void Game::bet(const int& chip) {
+    if (chips[active] + chip <= commit[stateCode]) {
+        std::cerr << "Invalid bet operation" << std::endl;
+    } else {
+        chips[active] += chip;
+        commit[stateCode] = chips[active];
+    }
+    active = (active + 1) % playerNum;
+    step();
 }

@@ -6,11 +6,11 @@ void Position::init(int pn) {
     {
     default: [[fallthrough]];
     case 7:
-        poss.insert(poss.begin() + 2, " M P "); [[fallthrough]];
+        poss.push_back(" M P "); [[fallthrough]];
     case 6:
-        poss.insert(poss.begin() + 3, " H J "); [[fallthrough]];
+        poss.push_back(" H J "); [[fallthrough]];
     case 5:
-        poss.insert(poss.begin() + 4, " C O "); [[fallthrough]];
+        poss.push_back(" C O "); [[fallthrough]];
     case 4:
         poss.insert(poss.begin() + 2, " UTG "); [[fallthrough]];
     case 3:
@@ -36,7 +36,7 @@ Position::Position(int pn, int di) {
 
 int Position::find(const std::string& s) const {
     int i;
-    for (i = 0; i < poss.size(); i++)
+    for (i = 0; i < int(poss.size()); i++)
         if (s == poss[i]) break;
     return i;   // i == playerNum means failed
 }

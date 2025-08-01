@@ -5,13 +5,7 @@
 #include<random>
 #include<sstream>
 
-std::map<int, std::string> stateStr = {
-    {0, "preflop"},
-    {1, "flop"},
-    {2, "turn"},
-    {3, "river"},
-    {4, "end"}
-};
+extern const std::string stateStr[];
 
 class Game
 {
@@ -35,6 +29,9 @@ private:
     void init();
     void shuffle();
     void dealCards();
+    void checkState();
+
+    void step();    // move "active"
 
     std::string genPubCardStr() const;
 
@@ -44,6 +41,9 @@ public:
 
     void show() const;
     int getPot() const;
+    int getState() const;
+    void fold();
+    int call();     // return the num of chips should be added
     void bet(const int&);
 };
 #endif
