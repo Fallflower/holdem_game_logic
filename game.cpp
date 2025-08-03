@@ -26,6 +26,7 @@ void Game::init() {
     int bb = pos.find(" B B ");
     chips[sb] = 1;
     chips[bb] = 2;
+    lastBet = bb;
 }
 
 void Game::shuffle() {
@@ -62,11 +63,22 @@ void Game::dealCards () {
 }
 
 void Game::checkState() {
-    for (int i = 0; i < playerNum && !ftag[i]; i++)
-    {
-        
+    int i, pi;
+    for (i = playerNum - 1, pi = (lastBet + i) % playerNum; i >= 0; i--) {    // 反向检查
+        if (ftag[pi]) continue;
+        if (chips[pi] < commit[stateCode])      // pi 从lastBet的前一位开始
+            break;
     }
-    
+    if (i == -1) {
+        int bb = pos.find(" B B ");
+        if (stateCode == 0 && bb == lastBet && chips[bb] == 2) // 针对f翻前桌call大盲的情况特殊处理：大盲位还有说话的机会
+            return;
+        else {
+            stateCode++;
+            active = (dealer + 1) % playerNum;
+            step();
+        }
+    }
 }
 
 void Game::step() {
@@ -153,13 +165,21 @@ int Game::getState() const {
 void Game::fold() {
     ftag[active] = 1;
     step();
+    checkState();
 }
 
 int Game::call() {
     int rest = commit[stateCode] - chips[active];
     chips[active] = commit[stateCode];
+    if (active == pos.find(" B B ") && chips[active] == 2 && rest == 0) { // 针对翻前桌call大盲的情况特殊处理：大盲选择check
+        stateCode++;
+        active = (dealer + 1) % playerNum;
+        step();
+        return 0;
+    }
     active = (active + 1) % playerNum;
     step();
+    checkState();
     return rest;
 }
 
@@ -170,6 +190,7 @@ void Game::bet(const int& chip) {
         chips[active] += chip;
         commit[stateCode] = chips[active];
     }
+    lastBet = active;
     active = (active + 1) % playerNum;
     step();
 }

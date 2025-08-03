@@ -1,7 +1,7 @@
 #include "game.h"
 
 int main() {
-    Game g(5, 2);
+    Game g(6, 2);
     g.show();
 
     g.bet(4);g.show();
@@ -9,8 +9,7 @@ int main() {
     g.call();g.show();
     g.fold();g.show();
     g.fold();g.show();
-    g.fold();g.show();
-    // g.call();
+    std::cout << g.call() << std::endl;
     g.show();
 
     // while (1)

@@ -22,7 +22,8 @@ private:
     int dealer;
     Position pos;
 
-    int active;     // active player
+    int active;     // index: active player
+    int lastBet;    // index: the last player who bet
     int *chips;     // chips commitment of each player
     bool *ftag;     // fold tags
 
