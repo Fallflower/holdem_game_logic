@@ -194,3 +194,16 @@ void Game::bet(const int& chip) {
     active = (active + 1) % playerNum;
     step();
 }
+
+std::vector<Poker> Game::getPub() const {
+    std::vector<Poker> temp;
+    for (int i = 0; i < 3; i++)
+    {
+        temp.push_back(flop[i]);
+    }
+    temp.push_back(turn);
+    temp.push_back(river);
+    temp.push_back(hands[0][0]);
+    temp.push_back(hands[0][1]);
+    return temp;
+}

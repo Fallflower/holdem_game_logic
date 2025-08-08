@@ -1,6 +1,6 @@
 #ifndef __GAME_H__
 #define __GAME_H__
-#include "poker.h"
+#include "handType.h"
 #include "position.h"
 #include<random>
 #include<sstream>
@@ -46,5 +46,7 @@ public:
     void fold();
     int call();     // return the num of chips should be added
     void bet(const int&);
+
+    std::vector<Poker> getPub() const; // for test
 };
 #endif

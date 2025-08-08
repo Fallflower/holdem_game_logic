@@ -20,7 +20,7 @@ const std::map<char, CARDNUM> numap = {
     {'J', JACK},
     {'Q', QUEEN},
     {'K', KING},
-    {'A', A}
+    {'A', ACE}
 };
 
 const std::string num_str[] = {
@@ -36,8 +36,20 @@ std::string Poker::to_string() const {
     return num_str[cnum] + suit_str[suit];
 }
 
+SUIT Poker::getSuit() const {
+    return suit;
+}
+
+CARDNUM Poker::getNum() const {
+    return cnum;
+}
+
 bool operator>(const Poker& p1, const Poker& p2) {
     return p1.cnum > p2.cnum;
+}
+
+bool operator<(const Poker &p1, const Poker &p2) {
+    return p1.cnum < p2.cnum;
 }
 
 std::ostream &Poker::output(std::ostream &out) const

@@ -24,7 +24,7 @@ enum CARDNUM
 	JACK,
 	QUEEN,
 	KING,
-    A
+    ACE
 };
 
 extern const std::map<char, CARDNUM> numap;
@@ -35,10 +35,15 @@ private:
 	SUIT suit;
 	CARDNUM cnum;
 public:
-	Poker( CARDNUM c = A, SUIT s = HEA);
+	Poker( CARDNUM c = ACE, SUIT s = HEA);
 	std::string to_string() const;
 
+	SUIT getSuit() const;
+	CARDNUM getNum() const;
+
+
 	friend bool operator>(const Poker &p1, const Poker &p2);
+	friend bool operator<(const Poker &p1, const Poker &p2);
     std::ostream& output(std::ostream& out) const;
 };
 
