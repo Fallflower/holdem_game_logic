@@ -3,6 +3,8 @@
 #include "poker.h"
 #include <vector>
 #include <map>
+#include <set>
+#include <algorithm>
 
 enum HANDRANK {
     HIGH_CARD,      // 高牌
@@ -20,6 +22,8 @@ struct HandType
 {
     HANDRANK rank;
     std::vector<CARDNUM> keys;
+
+    std::string to_string() const;
 };
 
 HandType evaluate(const std::vector<Poker>& cards);

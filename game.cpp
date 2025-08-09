@@ -110,6 +110,25 @@ std::string Game::genPubCardStr() const {
     return oss.str();
 }
 
+std::vector<Poker> Game::getHands(const int& k) const {
+    std::vector<Poker> temp;
+    switch (stateCode)
+    {
+    case 3: temp.insert(temp.begin(), river); [[fallthrough]];
+    case 2: temp.insert(temp.begin(), turn); [[fallthrough]];
+    case 1:
+        temp.insert(temp.begin(), flop[2]);
+        temp.insert(temp.begin(), flop[1]);
+        temp.insert(temp.begin(), flop[0]);
+        break;
+    default:
+        break;
+    }
+    temp.push_back(hands[k][0]);
+    temp.push_back(hands[k][1]);
+    return temp;
+}
+
 
 Game::Game(int pn, int d): playerNum(pn), dealer(d) {
     init();
@@ -146,7 +165,8 @@ void Game::show() const {
         if (ftag[i])
             std::cout << "\t\t(fold)" << std::endl;
         else
-            std::cout << "\t\tWin: %" << std::endl;
+            std::cout << "\t" << evaluate(getHands(i)) << std::endl;
+            // std::cout << "\t\tWin: %" << std::endl;
     }
     std::cout << "================================================================" << std::endl;
 }
@@ -193,17 +213,4 @@ void Game::bet(const int& chip) {
     lastBet = active;
     active = (active + 1) % playerNum;
     step();
-}
-
-std::vector<Poker> Game::getPub() const {
-    std::vector<Poker> temp;
-    for (int i = 0; i < 3; i++)
-    {
-        temp.push_back(flop[i]);
-    }
-    temp.push_back(turn);
-    temp.push_back(river);
-    temp.push_back(hands[0][0]);
-    temp.push_back(hands[0][1]);
-    return temp;
 }

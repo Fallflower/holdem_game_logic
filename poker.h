@@ -9,6 +9,7 @@ enum SUIT
 };
 
 extern const std::map<char, SUIT> smap;
+extern const std::string suit_str[];
 
 enum CARDNUM
 {
@@ -28,6 +29,7 @@ enum CARDNUM
 };
 
 extern const std::map<char, CARDNUM> numap;
+const std::string num_str(const CARDNUM&);
 
 struct Poker
 {

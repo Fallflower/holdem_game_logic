@@ -35,7 +35,7 @@ private:
     void step();    // move "active"
 
     std::string genPubCardStr() const;
-
+    std::vector<Poker> getHands(const int&) const;
 public:
     Game(int pn = 3, int d = 0);
     ~Game();
@@ -47,6 +47,5 @@ public:
     int call();     // return the num of chips should be added
     void bet(const int&);
 
-    std::vector<Poker> getPub() const; // for test
 };
 #endif

@@ -23,9 +23,25 @@ const std::map<char, CARDNUM> numap = {
     {'A', ACE}
 };
 
-const std::string num_str[] = {
-    "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"
-};
+const std::string num_str(const CARDNUM& c) {
+    switch (c)
+    {
+    case NUM_2: return "2"; 
+    case NUM_3: return "3";
+    case NUM_4: return "4";
+    case NUM_5: return "5";
+    case NUM_6: return "6";
+    case NUM_7: return "7";
+    case NUM_8: return "8";
+    case NUM_9: return "9";
+    case NUM_10: return "T";
+    case JACK: return "J";
+    case QUEEN: return "Q";
+    case KING: return "K";
+    case ACE: return "A";
+    }
+    return "";
+}
 
 const std::string suit_str[] = {
     "\u2665", "\u2663", "\u2666", "\u2660"
@@ -33,7 +49,7 @@ const std::string suit_str[] = {
 Poker::Poker(CARDNUM c, SUIT s) : suit(s), cnum(c) {}
 
 std::string Poker::to_string() const {
-    return num_str[cnum] + suit_str[suit];
+    return num_str(cnum) + suit_str[suit];
 }
 
 SUIT Poker::getSuit() const {

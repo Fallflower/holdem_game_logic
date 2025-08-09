@@ -2,7 +2,7 @@
 
 int main() {
     Game g(6, 2);
-    // g.show();
+    g.show();
 
     // g.bet(4);g.show();
     // g.fold();g.show();
@@ -23,7 +23,6 @@ int main() {
     
 
     // test
-    std::cout << evaluate(g.getPub());
     // Position p(9, 1);
     // std::cout << p << std::endl;
     // Game g(9, 2);
