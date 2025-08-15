@@ -4,13 +4,14 @@ int main() {
     Game g(6, 2);
     g.show();
 
-    // g.bet(4);g.show();
-    // g.fold();g.show();
-    // g.call();g.show();
-    // g.fold();g.show();
-    // g.fold();g.show();
+    g.bet(4);
+    g.fold();
+    g.call();
+    g.fold();
+    g.fold();
+    g.call();
     // std::cout << g.call() << std::endl;
-    // g.show();
+    g.show();
 
     // while (1)
     // {

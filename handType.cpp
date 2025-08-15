@@ -140,7 +140,11 @@ HandType evaluate(const std::vector<Poker>& cards) {
     if (straight) return {STRAIGHT, {straiNum}};
     if (trible) return {THREE_OF_A_KIND, {triNum, highNum[0], highNum[1]}};
     if (pair >= 2) return {TWO_PAIR, {pairNum[pair-1], pairNum[pair-2], highNum[0]}};
-    if (pair == 1) return {ONE_PAIR, {pairNum[0], highNum[0], highNum[1], highNum[2]}};
+    if (pair == 1) {
+        std::vector<CARDNUM> kt = {pairNum[0]};
+        kt.insert(kt.end(), highNum.begin(), highNum.end());
+        return {ONE_PAIR, kt};
+    }
     return {HIGH_CARD, highNum};
 }
 
@@ -158,12 +162,6 @@ static int compareHandType(const HandType& t1, const HandType& t2) {
 }
 
 std::ostream& operator<<(std::ostream& out, const HandType& t) {
-    // out << int(t.rank) << std::endl;
-    // for (auto i : t.keys) {
-    //     out << int(i) << "\t";
-    // }
-    // out << std::endl;
-    // return out;
     out << t.to_string();
     return out;
 }

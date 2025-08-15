@@ -163,10 +163,11 @@ void Game::show() const {
             std::cout << hands[i][j] << ' ';
         std::cout << "\t" << chips[i];
         if (ftag[i])
-            std::cout << "\t\t(fold)" << std::endl;
+            std::cout << "\t(fold)";
         else
-            std::cout << "\t" << evaluate(getHands(i)) << std::endl;
-            // std::cout << "\t\tWin: %" << std::endl;
+            std::cout << "\t" << evaluate(getHands(i));
+            // std::cout << "\t\tWin: %"
+        std::cout << std::endl;
     }
     std::cout << "================================================================" << std::endl;
 }
