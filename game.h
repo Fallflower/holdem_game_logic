@@ -47,5 +47,7 @@ public:
     int call();     // return the num of chips should be added
     void bet(const int&);
 
+    std::vector<int> checkWinner() const;
+
 };
 #endif

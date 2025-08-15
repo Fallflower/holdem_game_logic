@@ -134,7 +134,7 @@ Game::Game(int pn, int d): playerNum(pn), dealer(d) {
     init();
     shuffle();
     dealCards();
-    stateCode = 0;
+    stateCode = 3;  // set to 3 (river state) for test
 }
 
 Game::~Game() {
@@ -214,4 +214,27 @@ void Game::bet(const int& chip) {
     lastBet = active;
     active = (active + 1) % playerNum;
     step();
+}
+
+std::vector<int> Game::checkWinner() const {
+    std::vector<int> res;
+    HandType bestType{HIGH_CARD, {NUM_2, NUM_2, NUM_2, NUM_2, NUM_2}};
+    for (int i = 0; i < playerNum; i++) {
+        if (!ftag[i]) {
+            std::vector<Poker> handCards = {flop[0], flop[1], flop[2], turn, river};
+            handCards.push_back(hands[i][0]);
+            handCards.push_back(hands[i][1]);
+            HandType t = evaluate(handCards);
+            switch (compareHandType(t, bestType))
+            {
+            case 1:
+                res.clear();    [[fallthrough]];
+            case 0:
+                res.push_back(i); bestType = t;   break;
+            default:
+                break;
+            }
+        }
+    }
+    return res;
 }

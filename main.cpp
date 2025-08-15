@@ -2,16 +2,19 @@
 
 int main() {
     Game g(6, 2);
-    g.show();
+    // g.show();
 
-    g.bet(4);
-    g.fold();
-    g.call();
-    g.fold();
-    g.fold();
-    g.call();
+    // g.bet(4);
+    // g.fold();
+    // g.call();
+    // g.fold();
+    // g.fold();
+    // g.call();
     // std::cout << g.call() << std::endl;
     g.show();
+    for (auto i : g.checkWinner()) {
+        std::cout << i << std::endl;
+    }
 
     // while (1)
     // {

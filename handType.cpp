@@ -148,7 +148,7 @@ HandType evaluate(const std::vector<Poker>& cards) {
     return {HIGH_CARD, highNum};
 }
 
-static int compareHandType(const HandType& t1, const HandType& t2) {
+int compareHandType(const HandType& t1, const HandType& t2) {
     if (t1.rank != t2.rank) {
         return t1.rank > t2.rank ? 1 : -1;
     }

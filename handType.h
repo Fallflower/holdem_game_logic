@@ -28,6 +28,6 @@ struct HandType
 
 HandType evaluate(const std::vector<Poker>& cards);
 
-static int compareHandType(const HandType& t1, const HandType& t2);
+int compareHandType(const HandType& t1, const HandType& t2);
 std::ostream& operator<<(std::ostream& out, const HandType& t);
 #endif
