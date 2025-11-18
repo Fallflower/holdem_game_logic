@@ -8,7 +8,10 @@ std::string HandType::to_string() const {
         temp = std::string("高牌")+num_str(keys[0]);
         break;
     case ONE_PAIR:
-        temp = std::string("对")+num_str(keys[0])+" "+num_str(keys[1])+"踢";
+        if (keys.size() > 1)
+            temp = std::string("对")+num_str(keys[0])+" "+num_str(keys[1])+"踢";
+        else
+            temp = std::string("对")+num_str(keys[0]);
         break;
     case TWO_PAIR:
         temp = std::string("对")+num_str(keys[0])+"对"+num_str(keys[1])+" "+num_str(keys[2])+"踢";
@@ -131,7 +134,6 @@ HandType evaluate(const std::vector<Poker>& cards) {
         if (trible && triNum[trible - 1] > quaKicker) quaKicker = triNum[trible-1];
         if (pair && pairNum[pair-1] > quaKicker) quaKicker = pairNum[pair-1];
     }
-
     // return result
     if (flush && straight && tag) return {STRAIGHT_FLUSH, {straiNum}};
     if (quadra) return {FOUR_OF_A_KIND, {quaNum, quaKicker}};
@@ -143,7 +145,8 @@ HandType evaluate(const std::vector<Poker>& cards) {
     if (pair >= 2) return {TWO_PAIR, {pairNum[pair-1], pairNum[pair-2], highNum[0]}};
     if (pair == 1) {
         std::vector<CARDNUM> kt = {pairNum[0]};
-        kt.insert(kt.end(), highNum.begin(), highNum.end());
+        if (highNum.size() > 0)
+            kt.push_back(highNum[0]);
         return {ONE_PAIR, kt};
     }
     return {HIGH_CARD, highNum};

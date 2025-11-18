@@ -13,11 +13,9 @@ inline void Swap(ElemType &e1, ElemType &e2)
 
 void Game::init() {
     pos = Position(playerNum, dealer);
-    pile = new Poker[52];
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 13; j++)
-            pile[i*13+j] = Poker(CARDNUM(j), SUIT(i));
-    
+            pile.push_back(Poker(CARDNUM(j), SUIT(i)));
     chips = new int[playerNum]{0};
     ftag = new bool[playerNum]{0};
     active = (dealer + 3) % playerNum;
@@ -56,10 +54,7 @@ void Game::dealCards () {
         }
     }
     int j = 2 * playerNum;
-    for (int k = 0; k < 3; k++)
-        flop[k] = pile[j + k + 1];
-    turn = pile[j + 5];
-    river = pile[j + 7];
+    pubCards.assign(pile.begin() + j, pile.begin() + j + 5);
 }
 
 void Game::checkState() {
@@ -91,12 +86,12 @@ std::string Game::genPubCardStr() const {
     std::vector<std::string> temp = {"??", "??", "??", "??", "??"};
     switch (stateCode)
     {
-    case 3: temp[4] = river.to_string(); [[fallthrough]];
-    case 2: temp[3] = turn.to_string(); [[fallthrough]];
+    case 3: temp[4] = pubCards[4].to_string(); [[fallthrough]];
+    case 2: temp[3] = pubCards[3].to_string(); [[fallthrough]];
     case 1:
-        temp[0] = flop[0].to_string();
-        temp[1] = flop[1].to_string();
-        temp[2] = flop[2].to_string();
+        temp[0] = pubCards[0].to_string();
+        temp[1] = pubCards[1].to_string();
+        temp[2] = pubCards[2].to_string();
         break;
     default:
         break;
@@ -112,18 +107,8 @@ std::string Game::genPubCardStr() const {
 
 std::vector<Poker> Game::getHands(const int& k) const {
     std::vector<Poker> temp;
-    switch (stateCode)
-    {
-    case 3: temp.insert(temp.begin(), river); [[fallthrough]];
-    case 2: temp.insert(temp.begin(), turn); [[fallthrough]];
-    case 1:
-        temp.insert(temp.begin(), flop[2]);
-        temp.insert(temp.begin(), flop[1]);
-        temp.insert(temp.begin(), flop[0]);
-        break;
-    default:
-        break;
-    }
+    if (stateCode)
+        temp.assign(pubCards.begin(), pubCards.end() - 3 + stateCode);
     temp.push_back(hands[k][0]);
     temp.push_back(hands[k][1]);
     return temp;
@@ -140,7 +125,6 @@ Game::Game(int pn, int d, int s): playerNum(pn), dealer(d), stateCode(s) {
 Game::~Game() {
     delete[] chips;
     delete[] ftag;
-    delete[] pile;
 
     for (int i = 0; i < playerNum; i++)
         delete[] hands[i];
@@ -221,12 +205,10 @@ void Game::bet(const int& chip) {
 
 std::vector<int> Game::checkWinner() const {
     std::vector<int> res;
-    HandType bestType{HIGH_CARD, {NUM_2, NUM_2, NUM_2, NUM_2, NUM_2}};
+    HandType bestType{HIGH_CARD, {NUM_2}};
     for (int i = 0; i < playerNum; i++) {
         if (!ftag[i]) {
-            std::vector<Poker> handCards = {flop[0], flop[1], flop[2], turn, river};
-            handCards.push_back(hands[i][0]);
-            handCards.push_back(hands[i][1]);
+            std::vector<Poker> handCards = getHands(i);
             HandType t = evaluate(handCards);
             switch (compareHandType(t, bestType))
             {

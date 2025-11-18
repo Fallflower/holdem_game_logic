@@ -10,10 +10,8 @@ extern const std::string stateStr[];
 class Game
 {
 private:
-    Poker* pile;
-    Poker flop[3];
-    Poker turn;
-    Poker river;
+    std::vector<Poker> pile;
+    std::vector<Poker> pubCards;
     Poker **hands;
 
     int playerNum;
