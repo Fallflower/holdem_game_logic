@@ -5,7 +5,10 @@
 #include<map>
 enum SUIT
 {
-	HEA, CLU, DIA, SPA
+	HEA,	// 红桃
+	CLU,	// 梅花
+	DIA,	// 方片
+	SPA		// 黑桃
 };
 
 extern const std::map<char, SUIT> smap;
@@ -37,7 +40,7 @@ private:
 	SUIT suit;
 	CARDNUM cnum;
 public:
-	Poker( CARDNUM c = ACE, SUIT s = HEA);
+	Poker(CARDNUM c = ACE, SUIT s = HEA);
 	std::string to_string() const;
 
 	SUIT getSuit() const;

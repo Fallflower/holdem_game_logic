@@ -55,27 +55,27 @@ HandType evaluate(const std::vector<Poker>& cards) {
         suit_statistic[c.getSuit()]++;
         num_statistic[c.getNum()]++;
     }
-    bool flush = 0, straight = 0, trible = 0, quadra = 0, tag = 0;
+    bool flush = 0, straight = 0, quadra = 0, tag = 0;
+    CARDNUM quaNum= NUM_2, straiNum= NUM_2, quaKicker;
     int pair = 0;
-    CARDNUM triNum = NUM_2, quaNum= NUM_2, straiNum= NUM_2, flusNum = NUM_2;
     CARDNUM pairNum[3];// 最多三对（不含三条及以上）
+    int trible = 0;
+    CARDNUM triNum[2]; // 最多两个三条 (不含)
     std::vector<CARDNUM> highNum;
-    
+    std::vector<CARDNUM> flushCards;
     // check flush
     for (auto it : suit_statistic)
         if (it.second >= 5) {
             flush = 1;
-            std::set<CARDNUM> flush_cards_set;
             for (Poker c : cards)
                 if (c.getSuit() == it.first)
-                    flush_cards_set.insert(c.getNum());
-            std::vector<CARDNUM> flush_cards(flush_cards_set.begin(), flush_cards_set.end());
-            std::sort(flush_cards.begin(), flush_cards.end());
-            flusNum = flush_cards.back();
-            for (size_t i = 0; i <= flush_cards.size() - 5; i++) {
-                if (flush_cards[i] == flush_cards[i + 4] + 4) {
+                    flushCards.push_back(c.getNum());
+            std::sort(flushCards.rbegin(), flushCards.rend());
+            for (size_t i = 0; i <= flushCards.size() - 5; i++) {
+                if (flushCards[i] == flushCards[i + 4] - 4) {
                     tag = 1;
-                    straiNum = flush_cards[i+4];
+                    straiNum = flushCards[i];
+                    break;
                 }
             } 
         }
@@ -102,43 +102,44 @@ HandType evaluate(const std::vector<Poker>& cards) {
             quaNum = i;
             break;
         case 3:
-            trible = 1;
-            triNum = i;
+            triNum[trible++] = i;
             break;
         case 2:
             pairNum[pair++] = i;
             break;
-        case 0:
+        case 1://  记录kicker
+            highNum.insert(highNum.begin(), i);
+            break;
+        case 0://   清空顺子记录
             k = 0;
             strai_low = CARDNUM(i + 1);
             break;
         default:
             break;
         }
-        if (num_statistic[i] >= 1) {
-            if (i == strai_low + 1) { //    判断顺子
-                strai_low = i;
-                k++;
-            }
-            if (num_statistic[i] == 1) {//  记录kicker
-                if (highNum.size() == 5)
-                    highNum.pop_back();
-                highNum.insert(highNum.begin(), i);
+        if (num_statistic[i] >= 1 && i == strai_low + 1) {//    判断顺子
+            strai_low = i;
+            k++;
+            if (k >= 4 && !tag) {
+                straight = 1;
+                straiNum = strai_low;
             }
         }
-        if (k >= 4 && !tag) {
-            straight = 1;
-            straiNum = strai_low;
-        }
+    }
+    if (quadra) {   // 四条牌型，三条和对子的牌都可能是kicker
+        quaKicker = highNum[0];
+        if (trible && triNum[trible - 1] > quaKicker) quaKicker = triNum[trible-1];
+        if (pair && pairNum[pair-1] > quaKicker) quaKicker = pairNum[pair-1];
     }
 
     // return result
     if (flush && straight && tag) return {STRAIGHT_FLUSH, {straiNum}};
-    if (quadra) return {FOUR_OF_A_KIND, {quaNum, highNum[0]}};
-    if (trible && pair) return {FULL_HOUSE, {triNum, pairNum[pair - 1]}};
-    if (flush) return {FLUSH, {flusNum}};
+    if (quadra) return {FOUR_OF_A_KIND, {quaNum, quaKicker}};
+    if (trible >= 2) return {FULL_HOUSE, {triNum[1], triNum[0]}};
+    if (trible==1 && pair) return {FULL_HOUSE, {triNum[0], pairNum[pair - 1]}};
+    if (flush) return {FLUSH, flushCards};
     if (straight) return {STRAIGHT, {straiNum}};
-    if (trible) return {THREE_OF_A_KIND, {triNum, highNum[0], highNum[1]}};
+    if (trible == 1) return {THREE_OF_A_KIND, {triNum[0], highNum[0], highNum[1]}};
     if (pair >= 2) return {TWO_PAIR, {pairNum[pair-1], pairNum[pair-2], highNum[0]}};
     if (pair == 1) {
         std::vector<CARDNUM> kt = {pairNum[0]};
