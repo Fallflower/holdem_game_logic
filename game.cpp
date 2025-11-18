@@ -130,11 +130,11 @@ std::vector<Poker> Game::getHands(const int& k) const {
 }
 
 
-Game::Game(int pn, int d): playerNum(pn), dealer(d) {
+Game::Game(int pn, int d, int s): playerNum(pn), dealer(d), stateCode(s) {
     init();
     shuffle();
     dealCards();
-    stateCode = 3;  // set to 3 (river state) for test
+    // stateCode = 3;  // set to 3 (river state) for test
 }
 
 Game::~Game() {
@@ -179,6 +179,10 @@ int Game::getPot() const {
     return temp;
 }
 
+int Game::getChipsToCall() const {
+    return commit[stateCode] - chips[active];
+}
+
 int Game::getState() const {
     return stateCode;
 }
@@ -189,19 +193,18 @@ void Game::fold() {
     checkState();
 }
 
-int Game::call() {
+void Game::call() {
     int rest = commit[stateCode] - chips[active];
-    chips[active] = commit[stateCode];
     if (active == pos.find(" B B ") && chips[active] == 2 && rest == 0) { // 针对翻前桌call大盲的情况特殊处理：大盲选择check
         stateCode++;
         active = (dealer + 1) % playerNum;
         step();
-        return 0;
+        return;
     }
+    chips[active] = commit[stateCode];
     active = (active + 1) % playerNum;
     step();
     checkState();
-    return rest;
 }
 
 void Game::bet(const int& chip) {

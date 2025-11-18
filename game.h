@@ -17,9 +17,9 @@ private:
     Poker **hands;
 
     int playerNum;
-    int stateCode;  // 0, 1, 2, 3
-    int commit[4] = {2, 0, 0, 0};  // Chips commitment of each round and 2 means big blind
     int dealer;
+    int stateCode;  // 0, 1, 2, 3
+    int commit[4] = {2, 0, 0, 0};  // Chips commitment of each round (2 means big blind)
     Position pos;
 
     int active;     // index: active player
@@ -37,14 +37,15 @@ private:
     std::string genPubCardStr() const;
     std::vector<Poker> getHands(const int&) const;
 public:
-    Game(int pn = 3, int d = 0);
+    Game(int pn = 3, int d = 0, int s = 0);
     ~Game();
 
     void show() const;
     int getPot() const;
+    int getChipsToCall() const;
     int getState() const;
     void fold();
-    int call();     // return the num of chips should be added
+    void call();     // return the num of chips should be added
     void bet(const int&);
 
     std::vector<int> checkWinner() const;

@@ -21,7 +21,7 @@ bool *ftag;                 // 玩家弃牌标记数组
 #### 玩家操作
 ```cpp
 void fold();                    // 当前玩家弃牌
-int call();                     // 当前玩家跟注 (返回需加注数量)
+void call();                    // 当前玩家跟注
 void bet(const int& amount);    // 当前玩家下注
 ```
 
@@ -29,6 +29,7 @@ void bet(const int& amount);    // 当前玩家下注
 ```cpp
 void show() const;              // 打印前游戏状态所有信息
 int getPot() const;             // 获取当前底池总额
+int getChipsToCall() const;     // 返回需跟注注数量
 int getState() const;           // 获取当前游戏状态
 ```
 
@@ -60,13 +61,15 @@ int main() {
     g.call();       // 关位跟注
     g.fold();       // 庄位弃牌
     g.fold();       // 小盲弃牌
-    g.call();       // 大盲过牌
+    g.call();       // 大盲跟注
 
     g.show();       // 游戏进入翻牌阶段
     // 打印赢家
+    std::cout << "Winner: ";
     for (auto i : g.checkWinner()) {
-        std::cout << i << std::endl;
+        std::cout << "Player" << i + 1 << "; ";
     }
+    std::cout << std::endl;
     return 0;
 }
 ```
@@ -87,7 +90,8 @@ int main() {
   Player5 ( B B ):   3♠ 2♥      2       对Q对3 J踢
  *Player6 ( UTG ):   7♣ 2♣      0       同花J
 ================================================================
-Winner index: 5
+Winner: Player6; 
+
 ```
 
 ### 关键操作说明
@@ -98,7 +102,8 @@ Winner index: 5
 
 2. **跟注**:
    ```cpp
-   int needed = game.call(); // 返回需要跟注的筹码数
+   int needed = game.getChipsToCall(); // 返回需要跟注的筹码数
+   game.call()
    ```
 
 3. **弃牌**:
