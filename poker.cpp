@@ -61,13 +61,16 @@ CARDNUM Poker::getNum() const {
 }
 
 bool operator>(const Poker& p1, const Poker& p2) {
-    return p1.cnum > p2.cnum;
+    return p1.getNum() > p2.getNum();
 }
 
 bool operator<(const Poker &p1, const Poker &p2) {
-    return p1.cnum < p2.cnum;
+    return p1.getNum() < p2.getNum();
 }
 
+bool operator==(const Poker &p1, const Poker &p2) {
+    return p1.getNum() == p2.getNum() && p1.getSuit() == p2.getSuit();
+}
 std::ostream &Poker::output(std::ostream &out) const
 {
     out << to_string();

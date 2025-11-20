@@ -1,7 +1,7 @@
 .PHONY: clean all
 
 CFLAGS = -Wall -Wextra -std=c++17 -O2
-# CFLAGS = -std=c++17
+# CFLAGS = -std=c++17 -g -fsanitize=address -fno-omit-frame-pointer
 targets = main.exe
 sources = $(wildcard *.cpp)
 objects = $(patsubst %.cpp,%.o,$(sources))

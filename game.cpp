@@ -30,40 +30,31 @@ void Game::init() {
 void Game::shuffle() {
     std::random_device seed;
     std::ranlux48 engine(seed());
-    std::uniform_int_distribution<> distrib(0, 51);
-    for (int i = 0; i < 52; i++)
-    {
-        int r;
-        while ((r = distrib(engine)) == i);
-        Swap(pile[i], pile[r]);
-    }
+    // std::uniform_int_distribution<> distrib(0, 51);
+    // for (int i = 0; i < 52; i++)
+    // {
+    //     int r;
+    //     while ((r = distrib(engine)) == i);
+    //     Swap(pile[i], pile[r]);
+    // }
+    std::shuffle(pile.begin(), pile.end(), engine);
 }
 
 void Game::dealCards () {
-    hands = new Poker*[playerNum];
     for (int i = 0; i < playerNum; i++)
-    {
-        int pi = (dealer + i) % playerNum; // deal begin from dealer
-        hands[pi] = new Poker[2];
-        if (pile[i] > pile[i + playerNum]) {
-            hands[pi][0] = pile[i];
-            hands[pi][1] = pile[i + playerNum];
-        } else {
-            hands[pi][1] = pile[i];
-            hands[pi][0] = pile[i + playerNum];
-        }
-    }
+        if (pile[i] > pile[i + playerNum])
+            hands.push_back({pile[i], pile[i + playerNum]});
+        else
+            hands.push_back({pile[i + playerNum], pile[i]});
     int j = 2 * playerNum;
     pubCards.assign(pile.begin() + j, pile.begin() + j + 5);
 }
 
 void Game::checkState() {
     int i, pi;
-    for (i = playerNum - 1, pi = (lastBet + i) % playerNum; i >= 0; i--) {    // 反向检查
-        if (ftag[pi]) continue;
-        if (chips[pi] < commit[stateCode])      // pi 从lastBet的前一位开始
+    for (i = playerNum - 1, pi = (lastBet + i) % playerNum; i >= 0; i--)    // 反向检查
+        if (!ftag[i] && chips[pi] < commit[stateCode])      // pi 从lastBet的前一位开始
             break;
-    }
     if (i == -1) {
         int bb = pos.find(" B B ");
         if (stateCode == 0 && bb == lastBet && chips[bb] == 2) // 针对f翻前桌call大盲的情况特殊处理：大盲位还有说话的机会
@@ -109,11 +100,54 @@ std::vector<Poker> Game::getHands(const int& k) const {
     std::vector<Poker> temp;
     if (stateCode)
         temp.assign(pubCards.begin(), pubCards.end() - 3 + stateCode);
-    temp.push_back(hands[k][0]);
-    temp.push_back(hands[k][1]);
+    temp.insert(temp.end(), hands[k].begin(), hands[k].end());
     return temp;
 }
 
+std::vector<double> Game::calcPreflopWinRate(const int& simulations) const {
+    std::vector<double> win(playerNum, 0.0);
+    std::vector<Poker> deck(pile.begin() + 2 * playerNum, pile.end()); // 取除了手牌以外的牌
+    std::random_device seed;
+    std::mt19937 engin(seed());
+    for (int i = 0; i < simulations; i++)
+    {
+        auto tmp = deck;
+        std::shuffle(tmp.begin(), tmp.end(), engin);
+        if (tmp.size() < 5) std::cerr << "fuck " << std::endl;
+        std::vector<Poker> board(tmp.begin(), tmp.begin() + 5);
+
+        auto winners = checkWinner(board);
+
+        int n = winners.size();
+        for (auto j : winners)
+            win[j] += 1.0 / n;
+    }
+    for (int i = 0; i < playerNum; i++)
+        win[i] = 100.0 * win[i] / simulations;
+    return win;
+}
+
+std::vector<int> Game::checkWinner(std::vector<Poker> public_cards) const {
+    std::vector<int> res;
+    HandType bestType{HIGH_CARD, {NUM_2}};
+    for (int i = 0; i < playerNum; i++) {
+        if (!ftag[i]) {
+            std::vector<Poker> handCards = hands[i];
+            handCards.insert(handCards.end(), public_cards.begin(), public_cards.end());
+            HandType t = evaluate(handCards);
+            switch (compareHandType(t, bestType))
+            {
+            case 1:
+                res.clear(); bestType = t; [[fallthrough]];
+            case 0:
+                res.push_back(i); break;
+            default:
+                break;
+            }
+        }
+    }
+    return res;
+}
 
 Game::Game(int pn, int d, int s): playerNum(pn), dealer(d), stateCode(s) {
     init();
@@ -125,10 +159,6 @@ Game::Game(int pn, int d, int s): playerNum(pn), dealer(d), stateCode(s) {
 Game::~Game() {
     delete[] chips;
     delete[] ftag;
-
-    for (int i = 0; i < playerNum; i++)
-        delete[] hands[i];
-    delete[] hands;
 }
 
 
@@ -139,6 +169,13 @@ void Game::show() const {
     std::cout << "   State:  " << stateStr[stateCode] << std::endl;
     std::cout << "     Pot:  " << getPot() << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl;
+    std::vector<double> win_rate;
+    try {
+        win_rate = calcPreflopWinRate(20000);
+    }
+    catch (const std::exception& e) {
+        std::cout << "Fatal error: " << e.what() << std::endl;
+    }
     for (int i = 0; i < playerNum; i++) {
         if (i == active) std::cout << " *";
         else std::cout << "  ";
@@ -147,10 +184,10 @@ void Game::show() const {
             std::cout << hands[i][j] << ' ';
         std::cout << "\t" << chips[i];
         if (ftag[i])
-            std::cout << "\t(fold)";
+            std::cout << "\t(fold)\t\t" << evaluate(getHands(i));
         else
-            std::cout << "\t" << evaluate(getHands(i));
-            // std::cout << "\t\tWin: %"
+            std::cout << "\t" << "胜率: " << std::fixed << std::setprecision(2) << win_rate[i] << "%\t" << evaluate(getHands(i));
+            // std::cout << "\t\tWin: %";
         std::cout << std::endl;
     }
     std::cout << "================================================================" << std::endl;

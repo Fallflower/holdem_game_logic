@@ -3,7 +3,6 @@
 #include "poker.h"
 #include <vector>
 #include <map>
-#include <set>
 #include <algorithm>
 
 enum HANDRANK {

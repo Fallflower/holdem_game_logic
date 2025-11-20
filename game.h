@@ -4,6 +4,7 @@
 #include "position.h"
 #include<random>
 #include<sstream>
+#include<iomanip>
 
 extern const std::string stateStr[];
 
@@ -12,7 +13,7 @@ class Game
 private:
     std::vector<Poker> pile;
     std::vector<Poker> pubCards;
-    Poker **hands;
+    std::vector<std::vector<Poker>> hands;
 
     int playerNum;
     int dealer;
@@ -34,16 +35,19 @@ private:
 
     std::string genPubCardStr() const;
     std::vector<Poker> getHands(const int&) const;
+
+    std::vector<double> calcPreflopWinRate(const int& simulations = 20000) const;
+    std::vector<int> checkWinner(std::vector<Poker> public_cards) const;
 public:
     Game(int pn = 3, int d = 0, int s = 0);
     ~Game();
 
     void show() const;
     int getPot() const;
-    int getChipsToCall() const;
+    int getChipsToCall() const;    // return the num of chips should be added
     int getState() const;
     void fold();
-    void call();     // return the num of chips should be added
+    void call();     
     void bet(const int&);
 
     std::vector<int> checkWinner() const;

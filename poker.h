@@ -45,12 +45,11 @@ public:
 
 	SUIT getSuit() const;
 	CARDNUM getNum() const;
-
-
-	friend bool operator>(const Poker &p1, const Poker &p2);
-	friend bool operator<(const Poker &p1, const Poker &p2);
     std::ostream& output(std::ostream& out) const;
 };
 
+bool operator>(const Poker &p1, const Poker &p2);
+bool operator<(const Poker &p1, const Poker &p2);
+bool operator==(const Poker &p1, const Poker &p2);
 std::ostream &operator<<(std::ostream &out, const Poker &p);
 #endif
