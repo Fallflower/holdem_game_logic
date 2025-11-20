@@ -30,13 +30,6 @@ void Game::init() {
 void Game::shuffle() {
     std::random_device seed;
     std::ranlux48 engine(seed());
-    // std::uniform_int_distribution<> distrib(0, 51);
-    // for (int i = 0; i < 52; i++)
-    // {
-    //     int r;
-    //     while ((r = distrib(engine)) == i);
-    //     Swap(pile[i], pile[r]);
-    // }
     std::shuffle(pile.begin(), pile.end(), engine);
 }
 
@@ -52,22 +45,26 @@ void Game::dealCards () {
 
 void Game::checkState() {
     int i, pi;
-    for (i = playerNum - 1, pi = (lastBet + i) % playerNum; i >= 0; i--)    // 反向检查
-        if (!ftag[i] && chips[pi] < commit[stateCode])      // pi 从lastBet的前一位开始
+    for (i = playerNum - 1, pi = (lastBet + i) % playerNum; i >= 0; i--) {    // 反向检查
+        if (ftag[pi]) continue;
+        if (chips[pi] < commit[stateCode])      // pi 从lastBet的前一位开始
             break;
+    }
     if (i == -1) {
         int bb = pos.find(" B B ");
         if (stateCode == 0 && bb == lastBet && chips[bb] == 2) // 针对f翻前桌call大盲的情况特殊处理：大盲位还有说话的机会
             return;
         else {
             stateCode++;
-            active = (dealer + 1) % playerNum;
+            active = dealer;
             step();
         }
     }
 }
 
 void Game::step() {
+    // std::cout << "active move" << std::endl;
+    active = (active + 1) % playerNum;
     while (ftag[active]) {
         active = (active + 1) % playerNum;
     }
@@ -104,16 +101,19 @@ std::vector<Poker> Game::getHands(const int& k) const {
     return temp;
 }
 
-std::vector<double> Game::calcPreflopWinRate(const int& simulations) const {
+std::vector<double> Game::calcWinRate(const int& simulations) const {
     std::vector<double> win(playerNum, 0.0);
-    std::vector<Poker> deck(pile.begin() + 2 * playerNum, pile.end()); // 取除了手牌以外的牌
+    int n = 0;
+    if (stateCode) n = stateCode + 2;
+    std::vector<Poker> deck(pile.begin() + 2 * playerNum + n, pile.end()); // 取除了手牌以外的牌
+    deck.insert(deck.begin(), pubCards.begin(), pubCards.begin() + n);
+    // std::cout << deck.size() << std::endl;
     std::random_device seed;
     std::mt19937 engin(seed());
     for (int i = 0; i < simulations; i++)
     {
         auto tmp = deck;
         std::shuffle(tmp.begin(), tmp.end(), engin);
-        if (tmp.size() < 5) std::cerr << "fuck " << std::endl;
         std::vector<Poker> board(tmp.begin(), tmp.begin() + 5);
 
         auto winners = checkWinner(board);
@@ -169,13 +169,7 @@ void Game::show() const {
     std::cout << "   State:  " << stateStr[stateCode] << std::endl;
     std::cout << "     Pot:  " << getPot() << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl;
-    std::vector<double> win_rate;
-    try {
-        win_rate = calcPreflopWinRate(20000);
-    }
-    catch (const std::exception& e) {
-        std::cout << "Fatal error: " << e.what() << std::endl;
-    }
+    auto win_rate = calcWinRate(20000);
     for (int i = 0; i < playerNum; i++) {
         if (i == active) std::cout << " *";
         else std::cout << "  ";
@@ -187,7 +181,6 @@ void Game::show() const {
             std::cout << "\t(fold)\t\t" << evaluate(getHands(i));
         else
             std::cout << "\t" << "胜率: " << std::fixed << std::setprecision(2) << win_rate[i] << "%\t" << evaluate(getHands(i));
-            // std::cout << "\t\tWin: %";
         std::cout << std::endl;
     }
     std::cout << "================================================================" << std::endl;
@@ -216,14 +209,12 @@ void Game::fold() {
 
 void Game::call() {
     int rest = commit[stateCode] - chips[active];
+    chips[active] = commit[stateCode];
     if (active == pos.find(" B B ") && chips[active] == 2 && rest == 0) { // 针对翻前桌call大盲的情况特殊处理：大盲选择check
         stateCode++;
-        active = (dealer + 1) % playerNum;
         step();
         return;
     }
-    chips[active] = commit[stateCode];
-    active = (active + 1) % playerNum;
     step();
     checkState();
 }
@@ -236,8 +227,12 @@ void Game::bet(const int& chip) {
         commit[stateCode] = chips[active];
     }
     lastBet = active;
-    active = (active + 1) % playerNum;
     step();
+}
+
+bool Game::isEnd() const {
+    if (stateCode > 3) return 1;
+    return 0;
 }
 
 std::vector<int> Game::checkWinner() const {
@@ -250,9 +245,9 @@ std::vector<int> Game::checkWinner() const {
             switch (compareHandType(t, bestType))
             {
             case 1:
-                res.clear();    [[fallthrough]];
+                res.clear(); bestType = t; [[fallthrough]];
             case 0:
-                res.push_back(i); bestType = t;   break;
+                res.push_back(i); break;
             default:
                 break;
             }

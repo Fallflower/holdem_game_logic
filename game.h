@@ -36,7 +36,7 @@ private:
     std::string genPubCardStr() const;
     std::vector<Poker> getHands(const int&) const;
 
-    std::vector<double> calcPreflopWinRate(const int& simulations = 20000) const;
+    std::vector<double> calcWinRate(const int& simulations = 20000) const;
     std::vector<int> checkWinner(std::vector<Poker> public_cards) const;
 public:
     Game(int pn = 3, int d = 0, int s = 0);
@@ -50,6 +50,7 @@ public:
     void call();     
     void bet(const int&);
 
+    bool isEnd() const;
     std::vector<int> checkWinner() const;
 
 };
