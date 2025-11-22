@@ -23,13 +23,18 @@ private:
 
     int active;     // index: active player
     int lastBet;    // index: the last player who bet
-    int *chips;     // chips commitment of each player
+    int **chips;    // [playerNum, 4] chips commitment of each player at each round
     bool *ftag;     // fold tags
+    bool *ctag;     // check tags
+
+    bool _end;      // all fold
 
     void init();
     void shuffle();
     void dealCards();
     void checkState();
+
+    int getCommited(const int&) const;
 
     void step();    // move "active"
 

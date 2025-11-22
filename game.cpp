@@ -1,6 +1,23 @@
 #include "game.h"
 
 const std::string stateStr[] = {"preflop", "flop", "turn", "river", "end"};
+class Error : public std::exception
+{
+private:
+	unsigned int m_code;
+	std::string m_what;
+	std::string full_mes;
+public:
+	Error(unsigned int code,  const std::string &what_arg): m_code(code), m_what(what_arg){
+		full_mes =  "Error code: " + std::to_string(m_code) + "\nError message: " + m_what;
+	}
+	virtual const char * what(void) const noexcept override
+	{
+		// char* mesg = new char[text.length()+1];
+		// strcpy(mesg, text.c_str());
+		return full_mes.c_str();
+	}
+};
 
 template <class ElemType >
 inline void Swap(ElemType &e1, ElemType &e2)
@@ -16,14 +33,24 @@ void Game::init() {
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 13; j++)
             pile.push_back(Poker(CARDNUM(j), SUIT(i)));
-    chips = new int[playerNum]{0};
-    ftag = new bool[playerNum]{0};
+    chips = new int*[playerNum];
+    for (int i = 0; i < playerNum; i++)
+        chips[i] = new int[4]{0};
+    
+    ftag = new bool[playerNum];
+    for (int i = 0; i < playerNum; i++)
+        ftag[i] = false;
+
+    ctag = new bool[playerNum];
+    for (int i = 0; i < playerNum; i++)
+        ctag[i] = false;
+    
     active = (dealer + 3) % playerNum;
     // commit blinds
     int sb = pos.find(" S B ");
     int bb = pos.find(" B B ");
-    chips[sb] = 1;
-    chips[bb] = 2;
+    chips[sb][0] = 1;
+    chips[bb][0] = 2;
     lastBet = bb;
 }
 
@@ -44,22 +71,30 @@ void Game::dealCards () {
 }
 
 void Game::checkState() {
-    int i, pi;
-    for (i = playerNum - 1, pi = (lastBet + i) % playerNum; i >= 0; i--) {    // 反向检查
-        if (ftag[pi]) continue;
-        if (chips[pi] < commit[stateCode])      // pi 从lastBet的前一位开始
-            break;
+    int i;
+    for (i = 0; i < playerNum; i++)
+    {
+        if (ftag[i]) continue;
+        if (!ctag[i]) break;
     }
-    if (i == -1) {
-        int bb = pos.find(" B B ");
-        if (stateCode == 0 && bb == lastBet && chips[bb] == 2) // 针对f翻前桌call大盲的情况特殊处理：大盲位还有说话的机会
-            return;
-        else {
-            stateCode++;
-            active = dealer;
-            step();
-        }
+    if (i == playerNum) {   // 进入下一阶段
+        stateCode++;
+        lastBet = -1;   // 清空lasetBet指针
+        for (int i = 0; i < playerNum; i++) // 清空check tags
+            if (!ftag[i])
+                ctag[i] = false;
+        // 移动active指针到庄位后一位
+        active = dealer;
+        step();
     }
+}
+
+int Game::getCommited(const int& pi) const
+{
+    int sum = 0;
+    for (int i = 0; i <= stateCode; i++)
+        sum += chips[pi][i];
+    return sum;
 }
 
 void Game::step() {
@@ -103,24 +138,32 @@ std::vector<Poker> Game::getHands(const int& k) const {
 
 std::vector<double> Game::calcWinRate(const int& simulations) const {
     std::vector<double> win(playerNum, 0.0);
-    int n = 0;
-    if (stateCode) n = stateCode + 2;
-    std::vector<Poker> deck(pile.begin() + 2 * playerNum + n, pile.end()); // 取除了手牌以外的牌
-    deck.insert(deck.begin(), pubCards.begin(), pubCards.begin() + n);
-    // std::cout << deck.size() << std::endl;
-    std::random_device seed;
-    std::mt19937 engin(seed());
-    for (int i = 0; i < simulations; i++)
-    {
-        auto tmp = deck;
-        std::shuffle(tmp.begin(), tmp.end(), engin);
-        std::vector<Poker> board(tmp.begin(), tmp.begin() + 5);
+    if (stateCode < 3) {// 使用蒙特卡洛算法计算翻前、翻牌、转牌阶段胜率
+        int known_pub_cards_num = 0;
+        if (stateCode) known_pub_cards_num = stateCode + 2;
+        std::vector<Poker> deck(pile.begin() + 2 * playerNum + known_pub_cards_num, pile.end()); // 取除了手牌和已发出的公牌以外的牌
+        // deck.insert(deck.begin(), pubCards.begin(), pubCards.begin() + n);
+        // std::cout << deck.size() << std::endl;
+        std::random_device seed;
+        std::mt19937 engin(seed());
+        for (int i = 0; i < simulations; i++)
+        {
+            auto tmp = deck;
+            std::shuffle(tmp.begin(), tmp.end(), engin);
+            std::vector<Poker> board(tmp.begin(), tmp.begin() + 5 - known_pub_cards_num);
+            board.insert(board.end(), pubCards.begin(), pubCards.begin() + known_pub_cards_num);
+            // std::cout << board.size() << std::endl;
+            auto winners = checkWinner(board);
 
-        auto winners = checkWinner(board);
-
-        int n = winners.size();
-        for (auto j : winners)
-            win[j] += 1.0 / n;
+            int n = winners.size();
+            for (auto j : winners)
+                win[j] += 1.0 / n;
+        }
+    }
+    if (stateCode == 3) {   // 河牌阶段，朴实无华的求胜率
+            auto winners = checkWinner();
+            int n = winners.size();
+            if (n == 1) {win[winners[0]] = 1.0 * simulations;} // 一名胜利者胜率显示100%；多名胜者胜率显示0%
     }
     for (int i = 0; i < playerNum; i++)
         win[i] = 100.0 * win[i] / simulations;
@@ -149,7 +192,7 @@ std::vector<int> Game::checkWinner(std::vector<Poker> public_cards) const {
     return res;
 }
 
-Game::Game(int pn, int d, int s): playerNum(pn), dealer(d), stateCode(s) {
+Game::Game(int pn, int d, int s): playerNum(pn), dealer(d), stateCode(s), _end(0) {
     init();
     shuffle();
     dealCards();
@@ -176,7 +219,7 @@ void Game::show() const {
         std::cout << "Player" << i + 1 << " (" << pos[i] << "):   ";
         for (int j = 0; j < 2; j++)
             std::cout << hands[i][j] << ' ';
-        std::cout << "\t" << chips[i];
+        std::cout << "\t" << chips[i][stateCode];
         if (ftag[i])
             std::cout << "\t(fold)\t\t" << evaluate(getHands(i));
         else
@@ -189,12 +232,13 @@ void Game::show() const {
 int Game::getPot() const {
     int temp = 0;
     for (int i = 0; i < playerNum; i++)
-        temp += chips[i];
+        for (int j = 0; j <= stateCode; j++)
+            temp += chips[i][j];
     return temp;
 }
 
 int Game::getChipsToCall() const {
-    return commit[stateCode] - chips[active];
+    return commit[stateCode] - chips[active][stateCode];
 }
 
 int Game::getState() const {
@@ -203,36 +247,37 @@ int Game::getState() const {
 
 void Game::fold() {
     ftag[active] = 1;
+    int num = 0;
+    for (int i = 0; i < playerNum; i++)
+        if (!ftag[i]) num++;
+    if (num == 1) {_end = 1; return;}
+    
     step();
     checkState();
 }
 
 void Game::call() {
-    int rest = commit[stateCode] - chips[active];
-    chips[active] = commit[stateCode];
-    if (active == pos.find(" B B ") && chips[active] == 2 && rest == 0) { // 针对翻前桌call大盲的情况特殊处理：大盲选择check
-        stateCode++;
-        step();
-        return;
-    }
+    chips[active][stateCode] = commit[stateCode];
+    ctag[active] = true;
     step();
     checkState();
 }
 
 void Game::bet(const int& chip) {
-    if (chips[active] + chip <= commit[stateCode]) {
-        std::cerr << "Invalid bet operation" << std::endl;
-    } else {
-        chips[active] += chip;
-        commit[stateCode] = chips[active];
-    }
+    if (chips[active][stateCode] + chip <= commit[stateCode])
+        throw Error(1, "Invalid betting scale.");
+    for (int i = 0; i < playerNum; i++)
+        ctag[i] = false;    // 加注将清空其他人的check tag
+    ctag[active] = true;    // 加注将自己标记成为check tag
+    chips[active][stateCode] += chip;
+    commit[stateCode] = chips[active][stateCode];
     lastBet = active;
     step();
 }
 
 bool Game::isEnd() const {
     if (stateCode > 3) return 1;
-    return 0;
+    return _end;
 }
 
 std::vector<int> Game::checkWinner() const {

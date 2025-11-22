@@ -61,15 +61,15 @@ int main() {
             g.fold(); break;
         case '2':
             g.call(); break;
+        case '3':
+            int n;
+            std::cin >> n;
+            g.bet(n); break;
         case 27:
             return 1;
-        // case 3:
-            // g.bet(); break;
-        
         default:
             break;
         }
-        
     }
 
     std::cout << "Winner: ";

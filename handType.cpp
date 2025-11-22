@@ -130,7 +130,8 @@ HandType evaluate(const std::vector<Poker>& cards) {
         }
     }
     if (quadra) {   // 四条牌型，三条和对子的牌都可能是kicker
-        quaKicker = highNum[0];
+        quaKicker = NUM_2;
+        if (highNum.size() > 0) quaKicker = highNum[0];
         if (trible && triNum[trible - 1] > quaKicker) quaKicker = triNum[trible-1];
         if (pair && pairNum[pair-1] > quaKicker) quaKicker = pairNum[pair-1];
     }
