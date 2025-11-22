@@ -12,8 +12,9 @@ int stateCode;              // 游戏状态 (0:Pre-flop, 1:Flop, 2:Turn, 3:River
 int dealer;                 // 庄家位置索引
 int active;                 // 当前行动玩家索引
 int lastBet;                // 最后下注玩家索引
-int *chips;                 // 玩家已投入的筹码
+int **chips;                // 玩家每个阶段投入
 bool *ftag;                 // 玩家弃牌标记数组
+bool *ctag;                 // 玩家过牌标记数组
 ```
 
 ### 主要成员函数
@@ -44,6 +45,7 @@ std::vector<int> checkWinner() const; // 检查赢家(返回赢家索引数组)
 - `1`: Flop (翻牌圈)
 - `2`: Turn (转牌圈)
 - `3`: River (河牌圈)
+当`stateCode`超过3或弃牌到只剩一人，游戏结束。
 
 ## 使用示例
 
