@@ -52,19 +52,29 @@ std::vector<int> checkWinner() const; // 检查赢家(返回赢家索引数组)
 #include "game.h"
 
 int main() {
-    // 创建6人游戏，庄家位置索引为2
-    Game g(6, 2);
-    // g.show();    // 显示初始状态
+    Game g(9, 2);
+    while (!g.isEnd()) {
+        g.show();
+        showMenu();
+        int k;
+        k = Choice("Please Choose:", "123\x1b");
+        switch (k)
+        {
+        case '1':
+            g.fold(); break;
+        case '2':
+            g.call(); break;
+        case '3':
+            int n;
+            std::cin >> n;
+            g.bet(n); break;
+        case 27:
+            return 1;
+        default:
+            break;
+        }
+    }
 
-    g.bet(4);       // 枪口位下注4
-    g.fold();       // 劫位弃牌
-    g.call();       // 关位跟注
-    g.fold();       // 庄位弃牌
-    g.fold();       // 小盲弃牌
-    g.call();       // 大盲跟注
-
-    g.show();       // 游戏进入翻牌阶段
-    // 打印赢家
     std::cout << "Winner: ";
     for (auto i : g.checkWinner()) {
         std::cout << "Player" << i + 1 << "; ";
@@ -74,24 +84,104 @@ int main() {
 }
 ```
 ### 输出实例
-（直接设置成河牌阶段进行演示）
 ```bash
 >.\main.exe
 ================================================================
   Public: 
-                        3♣  T♣  J♣  Q♠  Q♦
-   State:  river
+                        ??  ??  ??  ??  ??
+   State:  preflop
      Pot:  3
 ----------------------------------------------------------------
-  Player1 ( H J ):   K♥ 2♠      0       对Q K踢
-  Player2 ( C O ):   Q♣ 8♥      0       三条Q J踢
-  Player3 (  D  ):   A♣ Q♥      0       三条Q A踢
-  Player4 ( S B ):   J♥ 8♠      1       对Q对J T踢
-  Player5 ( B B ):   3♠ 2♥      2       对Q对3 J踢
- *Player6 ( UTG ):   7♣ 2♣      0       同花J
+  Player1 ( H J ):   8♠ 6♥      0       胜率: 12.60%    高牌8
+  Player2 ( C O ):   J♣ 3♥      0       胜率: 13.02%    高牌J
+  Player3 (  D  ):   Q♦ 6♣      0       胜率: 1.80%     高牌Q
+  Player4 ( S B ):   K♦ 4♣      1       胜率: 7.83%     高牌K
+  Player5 ( B B ):   K♠ 4♥      2       胜率: 8.09%     高牌K
+ *Player6 ( UTG ):   Q♥ Q♠      0       胜率: 20.88%    对Q
+  Player7 (UTG+1):   9♣ 9♠      0       胜率: 23.39%    对9
+  Player8 (UTG+2):   Q♣ 2♦      0       胜率: 2.10%     高牌Q
+  Player9 ( M P ):   5♦ 2♣      0       胜率: 10.30%    高牌5
 ================================================================
+==========================
+=== Fold           [1] ===
+=== Call/Check     [2] ===
+=== Bet/Raise      [3] ===
+=== QUIT         [Esc] ===
+==========================
+Please Choose:{1 2 3 [Esc]}: 
+......(after many operations)
+================================================================
+  Public:
+                        3♣  T♥  7♥  ??  ??
+   State:  flop
+     Pot:  39
+----------------------------------------------------------------
+  Player1 ( H J ):   8♠ 6♥      0       (fold)          高牌T
+  Player2 ( C O ):   J♣ 3♥      0       (fold)          对3 J踢
+  Player3 (  D  ):   Q♦ 6♣      0       (fold)          高牌Q
+  Player4 ( S B ):   K♦ 4♣      0       (fold)          高牌K
+  Player5 ( B B ):   K♠ 4♥      0       (fold)          高牌K
+  Player6 ( UTG ):   Q♥ Q♠      0       胜率: 85.61%    对Q T踢
+ *Player7 (UTG+1):   9♣ 9♠      0       胜率: 14.39%    对9 T踢
+  Player8 (UTG+2):   Q♣ 2♦      0       (fold)          高牌Q
+  Player9 ( M P ):   5♦ 2♣      0       (fold)          高牌T
+================================================================
+==========================
+=== Fold           [1] ===
+=== Call/Check     [2] ===
+=== Bet/Raise      [3] ===
+=== QUIT         [Esc] ===
+==========================
+Please Choose:{1 2 3 [Esc]}:
+......(after many operations)
+================================================================
+  Public:
+                        3♣  T♥  7♥  8♥  ??
+   State:  turn
+     Pot:  57
+----------------------------------------------------------------
+  Player1 ( H J ):   8♠ 6♥      0       (fold)          对8 T踢
+  Player2 ( C O ):   J♣ 3♥      0       (fold)          对3 J踢
+  Player3 (  D  ):   Q♦ 6♣      0       (fold)          高牌Q
+  Player4 ( S B ):   K♦ 4♣      0       (fold)          高牌K
+  Player5 ( B B ):   K♠ 4♥      0       (fold)          高牌K
+  Player6 ( UTG ):   Q♥ Q♠      18      胜率: 83.46%    对Q T踢
+ *Player7 (UTG+1):   9♣ 9♠      0       胜率: 16.54%    对9 T踢
+  Player8 (UTG+2):   Q♣ 2♦      0       (fold)          高牌Q
+  Player9 ( M P ):   5♦ 2♣      0       (fold)          高牌T
+================================================================
+==========================
+=== Fold           [1] ===
+=== Call/Check     [2] ===
+=== Bet/Raise      [3] ===
+=== QUIT         [Esc] ===
+==========================
+Please Choose:{1 2 3 [Esc]}:
+......(after some operations)
+================================================================
+  Public:
+                        3♣  T♥  7♥  8♥  7♣
+   State:  river
+     Pot:  135
+----------------------------------------------------------------
+  Player1 ( H J ):   8♠ 6♥      0       (fold)          对8对7 T踢
+  Player2 ( C O ):   J♣ 3♥      0       (fold)          对7对3 J踢
+  Player3 (  D  ):   Q♦ 6♣      0       (fold)          对7 Q踢
+  Player4 ( S B ):   K♦ 4♣      0       (fold)          对7 K踢
+  Player5 ( B B ):   K♠ 4♥      0       (fold)          对7 K踢
+  Player6 ( UTG ):   Q♥ Q♠      60      胜率: 100.00%   对Q对7 T踢
+ *Player7 (UTG+1):   9♣ 9♠      0       胜率: 0.00%     对9对7 T踢
+  Player8 (UTG+2):   Q♣ 2♦      0       (fold)          对7 Q踢
+  Player9 ( M P ):   5♦ 2♣      0       (fold)          对7 T踢
+================================================================
+==========================
+=== Fold           [1] ===
+=== Call/Check     [2] ===
+=== Bet/Raise      [3] ===
+=== QUIT         [Esc] ===
+==========================
+Please Choose:{1 2 3 [Esc]}:
 Winner: Player6; 
-
 ```
 
 ### 关键操作说明
