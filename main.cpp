@@ -1,6 +1,35 @@
 #include "game.h"
 #include<conio.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#else   //Linux/macOS
+#include <locale.h>
+#endif
+
+void setConsoleToUTF8() {
+#ifdef _WIN32
+    // Windows系统
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    
+    // 还需要设置标准输出模式以支持UTF-8
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut != INVALID_HANDLE_VALUE) {
+        DWORD dwMode = 0;
+        GetConsoleMode(hOut, &dwMode);
+        dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        SetConsoleMode(hOut, dwMode);
+    }
+#else
+    // Linux/macOS系统
+    setlocale(LC_ALL, "en_US.UTF-8");
+    std::locale::global(std::locale("en_US.UTF-8"));
+    std::wcout.imbue(std::locale("en_US.UTF-8"));
+    std::wcin.imbue(std::locale("en_US.UTF-8"));
+#endif
+}
+
 int Pos(char ch, const char* str)			// 返回指定字符ch在字符串str中的下标。不存在时返回-1
 {
 	int i;
@@ -49,6 +78,8 @@ void showMenu()
 
 
 int main() {
+    setConsoleToUTF8();
+
     Game g(9, 2);
     while (!g.isEnd()) {
         g.show();
