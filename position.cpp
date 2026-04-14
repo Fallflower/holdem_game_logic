@@ -29,7 +29,7 @@ void Position::adjust(int pn, int di) {
 }
 
 
-Position::Position(int pn, int di) {
+Position::Position(int pn, int di) : dealer(di) {
     init(pn);
     adjust(pn, di); // 调整顺序使其与game中的玩家顺序对应
 }
@@ -39,6 +39,14 @@ int Position::find(const std::string& s) const {
     for (i = 0; i < int(poss.size()); i++)
         if (s == poss[i]) break;
     return i;   // i == playerNum means failed
+}
+
+int Position::getDealer() const {
+    return dealer;
+}
+
+int Position::getPlayerNum() const {
+    return poss.size();
 }
 
 std::string Position::operator[](int pi) const {

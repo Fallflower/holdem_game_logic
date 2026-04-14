@@ -1,7 +1,8 @@
 .PHONY: clean all
 
+CXX = g++
 # CFLAGS = -std=c++17 -g	# for debug
-CFLAGS = -Wall -Wextra -std=c++17 -O2
+CFLAGS = -Wall -Wextra -std=c++17
 targets = main.exe
 sources = $(wildcard *.cpp)
 objects = $(patsubst %.cpp,%.o,$(sources))
@@ -9,14 +10,14 @@ objects = $(patsubst %.cpp,%.o,$(sources))
 # objects = main.o poker.o logic.o
 
 
-all: $(targets)
-	@echo all done
+run: $(targets)
+	./$(targets)
 
 %.exe: $(objects)
-	g++ $(CFLAGS) $^ -o $@
-
+	$(CXX) $(CFLAGS) $^ -o $@
+	
 %.o: %.cpp
-	g++ $(CFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) -c $< -o $@
 
 clean:
 	del $(objects) *.exe

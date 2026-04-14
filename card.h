@@ -1,5 +1,5 @@
-#ifndef __POKER_H__
-#define __POKER_H__
+#ifndef __CARD_H__
+#define __CARD_H__
 #include<iostream>
 #include<string>
 #include<map>
@@ -34,13 +34,13 @@ enum CARDNUM
 extern const std::map<char, CARDNUM> numap;
 const std::string num_str(const CARDNUM&);
 
-struct Poker
+struct Card
 {
 private:
 	SUIT suit;
 	CARDNUM cnum;
 public:
-	Poker(CARDNUM c = ACE, SUIT s = HEA);
+	Card(CARDNUM c = ACE, SUIT s = HEA);
 	std::string to_string() const;
 
 	SUIT getSuit() const;
@@ -48,8 +48,8 @@ public:
     std::ostream& output(std::ostream& out) const;
 };
 
-bool operator>(const Poker &p1, const Poker &p2);
-bool operator<(const Poker &p1, const Poker &p2);
-bool operator==(const Poker &p1, const Poker &p2);
-std::ostream &operator<<(std::ostream &out, const Poker &p);
+bool operator>(const Card &p1, const Card &p2);
+bool operator<(const Card &p1, const Card &p2);
+bool operator==(const Card &p1, const Card &p2);
+std::ostream &operator<<(std::ostream &out, const Card &p);
 #endif

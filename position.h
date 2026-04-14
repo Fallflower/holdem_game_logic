@@ -7,14 +7,16 @@ class Position
 {
 private:
     std::vector<std::string> poss;
+    int dealer;
 
     void init(int pn);
     void adjust(int pn, int di);
 
-
 public:
     Position(int pn = 3, int di = 1);
     int find(const std::string&) const;
+    int getDealer() const;
+    int getPlayerNum() const;
 
     std::string operator[](int pi) const;
 

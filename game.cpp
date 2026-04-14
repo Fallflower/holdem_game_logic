@@ -28,11 +28,11 @@ inline void Swap(ElemType &e1, ElemType &e2)
 	temp = e1;	e1 = e2;  e2 = temp;
 }
 
-void Game::init() {
-    pos = Position(playerNum, dealer);
+void Game::init_game() {
+    // pos = Position(playerNum, dealer);
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 13; j++)
-            pile.push_back(Poker(CARDNUM(j), SUIT(i)));
+            pile.push_back(Card(CARDNUM(j), SUIT(i)));
     chips = new int*[playerNum];
     for (int i = 0; i < playerNum; i++)
         chips[i] = new int[4]{0};
@@ -46,11 +46,19 @@ void Game::init() {
         ctag[i] = false;
     
     active = (dealer + 3) % playerNum;
+}
+
+void Game::init_players(const Player& p, const int& c) {
+    for (int i = 1; i < playerNum; i++) // create pn-1 botPlayers
+        players.push_back(Player("BotPlayer"+std::to_string(i), c));
+    players.insert(players.begin() + hpi, p);
     // commit blinds
     int sb = pos.find(" S B ");
     int bb = pos.find(" B B ");
     chips[sb][0] = 1;
     chips[bb][0] = 2;
+    players[sb].setChips(c - 1);
+    players[bb].setChips(c - 2);
     lastBet = bb;
 }
 
@@ -128,8 +136,8 @@ std::string Game::genPubCardStr() const {
     return oss.str();
 }
 
-std::vector<Poker> Game::getHands(const int& k) const {
-    std::vector<Poker> temp;
+std::vector<Card> Game::getHands(const int& k) const {
+    std::vector<Card> temp;
     if (stateCode)
         temp.assign(pubCards.begin(), pubCards.end() - 3 + stateCode);
     temp.insert(temp.end(), hands[k].begin(), hands[k].end());
@@ -141,7 +149,7 @@ std::vector<double> Game::calcWinRate(const int& simulations) const {
     if (stateCode < 3) {// 使用蒙特卡洛算法计算翻前、翻牌、转牌阶段胜率
         int known_pub_cards_num = 0;
         if (stateCode) known_pub_cards_num = stateCode + 2;
-        std::vector<Poker> deck(pile.begin() + 2 * playerNum + known_pub_cards_num, pile.end()); // 取除了手牌和已发出的公牌以外的牌
+        std::vector<Card> deck(pile.begin() + 2 * playerNum + known_pub_cards_num, pile.end()); // 取除了手牌和已发出的公牌以外的牌
         // deck.insert(deck.begin(), pubCards.begin(), pubCards.begin() + n);
         // std::cout << deck.size() << std::endl;
         std::random_device seed;
@@ -150,7 +158,7 @@ std::vector<double> Game::calcWinRate(const int& simulations) const {
         {
             auto tmp = deck;
             std::shuffle(tmp.begin(), tmp.end(), engin);
-            std::vector<Poker> board(tmp.begin(), tmp.begin() + 5 - known_pub_cards_num);
+            std::vector<Card> board(tmp.begin(), tmp.begin() + 5 - known_pub_cards_num);
             board.insert(board.end(), pubCards.begin(), pubCards.begin() + known_pub_cards_num);
             // std::cout << board.size() << std::endl;
             auto winners = checkWinner(board);
@@ -170,12 +178,12 @@ std::vector<double> Game::calcWinRate(const int& simulations) const {
     return win;
 }
 
-std::vector<int> Game::checkWinner(std::vector<Poker> public_cards) const {
+std::vector<int> Game::checkWinner(std::vector<Card> public_cards) const {
     std::vector<int> res;
     HandType bestType{HIGH_CARD, {NUM_2}};
     for (int i = 0; i < playerNum; i++) {
         if (!ftag[i]) {
-            std::vector<Poker> handCards = hands[i];
+            std::vector<Card> handCards = hands[i];
             handCards.insert(handCards.end(), public_cards.begin(), public_cards.end());
             HandType t = evaluate(handCards);
             switch (compareHandType(t, bestType))
@@ -192,16 +200,37 @@ std::vector<int> Game::checkWinner(std::vector<Poker> public_cards) const {
     return res;
 }
 
-Game::Game(int pn, int d, int s): playerNum(pn), dealer(d), stateCode(s), _end(0) {
-    init();
+Game::Game(int pn, int d): playerNum(pn), dealer(d), stateCode(0), _end(0) {
+    init_game();
     shuffle();
     dealCards();
     // stateCode = 3;  // set to 3 (river state) for test
 }
 
+/**
+ * @brief 使用此构造函数构建一个单人游戏
+ * 
+ * @param p (Position class) - Position类，包括玩家数量、位置信息
+ * @param c (initialChips) - 初始筹码量，每位玩家的起始资金
+ * @param hp (humanPlayer) - 人类玩家对象引用，包含姓名、当前手牌等信息
+ * @param hppi (hp position index) - 人类玩家在桌面的位置标识
+ */
+Game::Game(const Position& p,const int& c, const Player& hp, const int& hppi)
+: playerNum(p.getPlayerNum()), dealer(p.getDealer()), stateCode(0), _end(0) {
+    pos = p;
+    init_game();
+    hpi = hppi;
+    init_players(hp, c);
+    shuffle();
+    dealCards();
+}
+
 Game::~Game() {
+    for (int i = 0; i < playerNum; i++)
+        delete[] chips[i];
     delete[] chips;
     delete[] ftag;
+    delete[] ctag;
 }
 
 
@@ -224,6 +253,25 @@ void Game::show() const {
             std::cout << "\t(fold)\t\t" << evaluate(getHands(i));
         else
             std::cout << "\t" << "胜率: " << std::fixed << std::setprecision(2) << win_rate[i] << "%\t" << evaluate(getHands(i));
+        std::cout << std::endl;
+    }
+    std::cout << "================================================================" << std::endl;
+}
+
+void Game::showPlayerView() const {
+    std::cout << "================================================================" << std::endl;
+    std::cout << "  Public: " << std::endl;
+    std::cout << "\t\t\t" << genPubCardStr() << std::endl;
+    std::cout << "   State:  " << stateStr[stateCode] << std::endl;
+    std::cout << "     Pot:  " << getPot() << std::endl;
+    std::cout << "----------------------------------------------------------------" << std::endl;
+    for (int i = 0; i < playerNum; i++) {
+        if (i == active) std::cout << " *";
+        else std::cout << "  ";
+        std::cout << players[i].getName() << " (" << pos[i] << "):   ";
+        for (int j = 0; j < 2; j++)
+            std::cout << hands[i][j] << ' ';
+        std::cout << "\t" << chips[i][stateCode];
         std::cout << std::endl;
     }
     std::cout << "================================================================" << std::endl;
@@ -285,7 +333,7 @@ std::vector<int> Game::checkWinner() const {
     HandType bestType{HIGH_CARD, {NUM_2}};
     for (int i = 0; i < playerNum; i++) {
         if (!ftag[i]) {
-            std::vector<Poker> handCards = getHands(i);
+            std::vector<Card> handCards = getHands(i);
             HandType t = evaluate(handCards);
             switch (compareHandType(t, bestType))
             {
@@ -299,4 +347,8 @@ std::vector<int> Game::checkWinner() const {
         }
     }
     return res;
+}
+
+Position Game::getPosiInfo() const {
+    return pos;
 }

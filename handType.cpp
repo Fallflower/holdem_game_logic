@@ -42,7 +42,7 @@ std::string HandType::to_string() const {
     return temp;
 }
 
-HandType evaluate(const std::vector<Poker>& cards) {
+HandType evaluate(const std::vector<Card>& cards) {
     std::map<SUIT, int> suit_statistic = {
         {HEA, 0},
         {CLU, 0},
@@ -54,7 +54,7 @@ HandType evaluate(const std::vector<Poker>& cards) {
     for (CARDNUM i = NUM_2; i <= ACE; i = CARDNUM(i + 1))
         num_statistic[i] = 0;
     
-    for (Poker c : cards) {
+    for (Card c : cards) {
         suit_statistic[c.getSuit()]++;
         num_statistic[c.getNum()]++;
     }
@@ -70,7 +70,7 @@ HandType evaluate(const std::vector<Poker>& cards) {
     for (auto it : suit_statistic)
         if (it.second >= 5) {
             flush = 1;
-            for (Poker c : cards)
+            for (Card c : cards)
                 if (c.getSuit() == it.first)
                     flushCards.push_back(c.getNum());
             std::sort(flushCards.rbegin(), flushCards.rend());

@@ -1,4 +1,4 @@
-#include "poker.h"
+#include "card.h"
 
 const std::map<char, SUIT> smap = {
     {'H', HEA},
@@ -46,38 +46,38 @@ const std::string num_str(const CARDNUM& c) {
 const std::string suit_str[] = {
     "\u2665", "\u2663", "\u2666", "\u2660"
 };
-Poker::Poker(CARDNUM c, SUIT s) : suit(s), cnum(c) {}
+Card::Card(CARDNUM c, SUIT s) : suit(s), cnum(c) {}
 
-std::string Poker::to_string() const {
+std::string Card::to_string() const {
     return num_str(cnum) + suit_str[suit];
 }
 
-SUIT Poker::getSuit() const {
+SUIT Card::getSuit() const {
     return suit;
 }
 
-CARDNUM Poker::getNum() const {
+CARDNUM Card::getNum() const {
     return cnum;
 }
 
-bool operator>(const Poker& p1, const Poker& p2) {
+bool operator>(const Card& p1, const Card& p2) {
     return p1.getNum() > p2.getNum();
 }
 
-bool operator<(const Poker &p1, const Poker &p2) {
+bool operator<(const Card &p1, const Card &p2) {
     return p1.getNum() < p2.getNum();
 }
 
-bool operator==(const Poker &p1, const Poker &p2) {
+bool operator==(const Card &p1, const Card &p2) {
     return p1.getNum() == p2.getNum() && p1.getSuit() == p2.getSuit();
 }
-std::ostream &Poker::output(std::ostream &out) const
+std::ostream &Card::output(std::ostream &out) const
 {
     out << to_string();
     return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const Poker &p)
+std::ostream &operator<<(std::ostream &out, const Card &p)
 {
     p.output(out);
     return out;

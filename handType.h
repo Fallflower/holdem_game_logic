@@ -1,6 +1,6 @@
 #ifndef __HAND_TYPE_H__
 #define __HAND_TYPE_H__
-#include "poker.h"
+#include "card.h"
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -25,8 +25,9 @@ struct HandType
     std::string to_string() const;
 };
 
-HandType evaluate(const std::vector<Poker>& cards);
+HandType evaluate(const std::vector<Card>& cards);
 
 int compareHandType(const HandType& t1, const HandType& t2);
 std::ostream& operator<<(std::ostream& out, const HandType& t);
+
 #endif

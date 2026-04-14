@@ -2,6 +2,7 @@
 #define __GAME_H__
 #include "handType.h"
 #include "position.h"
+#include "player.h"
 #include<random>
 #include<sstream>
 #include<iomanip>
@@ -11,11 +12,13 @@ extern const std::string stateStr[];
 class Game
 {
 private:
-    std::vector<Poker> pile;
-    std::vector<Poker> pubCards;
-    std::vector<std::vector<Poker>> hands;
+    std::vector<Card> pile;
+    std::vector<Card> pubCards;
+    std::vector<std::vector<Card>> hands;
 
     int playerNum;
+    std::vector<Player> players;
+    int hpi;        // humanPlayerIndex
     int dealer;
     int stateCode;  // 0, 1, 2, 3
     int commit[4] = {2, 0, 0, 0};  // Chips commitment of each round (2 means big blind)
@@ -29,7 +32,8 @@ private:
 
     bool _end;      // all fold
 
-    void init();
+    void init_game();
+    void init_players(const Player&, const int&);
     void shuffle();
     void dealCards();
     void checkState();
@@ -39,15 +43,17 @@ private:
     void step();    // move "active"
 
     std::string genPubCardStr() const;
-    std::vector<Poker> getHands(const int&) const;
+    std::vector<Card> getHands(const int&) const;   // public + hand
 
     std::vector<double> calcWinRate(const int& simulations = 20000) const;
-    std::vector<int> checkWinner(std::vector<Poker> public_cards) const;
+    std::vector<int> checkWinner(std::vector<Card> public_cards) const;
 public:
-    Game(int pn = 3, int d = 0, int s = 0);
+    Game(int pn = 3, int d = 0);
+    Game(const Position& posInfo, const int& initialChips, const Player& humanPlayer, const int &humanPlayerPosIndex);
     ~Game();
 
     void show() const;
+    void showPlayerView() const;
     int getPot() const;
     int getChipsToCall() const;    // return the num of chips should be added
     int getState() const;
@@ -57,6 +63,8 @@ public:
 
     bool isEnd() const;
     std::vector<int> checkWinner() const;
+
+    Position getPosiInfo() const;
 
 };
 #endif
