@@ -150,8 +150,6 @@ std::vector<double> Game::calcWinRate(const int& simulations) const {
         int known_pub_cards_num = 0;
         if (stateCode) known_pub_cards_num = stateCode + 2;
         std::vector<Card> deck(pile.begin() + 2 * playerNum + known_pub_cards_num, pile.end()); // 取除了手牌和已发出的公牌以外的牌
-        // deck.insert(deck.begin(), pubCards.begin(), pubCards.begin() + n);
-        // std::cout << deck.size() << std::endl;
         std::random_device seed;
         std::mt19937 engin(seed());
         for (int i = 0; i < simulations; i++)
@@ -259,22 +257,38 @@ void Game::show() const {
 }
 
 void Game::showPlayerView() const {
-    std::cout << "================================================================" << std::endl;
-    std::cout << "  Public: " << std::endl;
-    std::cout << "\t\t\t" << genPubCardStr() << std::endl;
-    std::cout << "   State:  " << stateStr[stateCode] << std::endl;
-    std::cout << "     Pot:  " << getPot() << std::endl;
-    std::cout << "----------------------------------------------------------------" << std::endl;
+    std::cout << "================================================================\n";
+    std::cout << "  Public: \n";
+    std::cout << "\t\t\t" << genPubCardStr() << "\n";
+    std::cout << "   State:  " << stateStr[stateCode] << "\n";
+    std::cout << "     Pot:  " << getPot() << "\n";
+    std::cout << "----------------------------------------------------------------\n";
+
     for (int i = 0; i < playerNum; i++) {
-        if (i == active) std::cout << " *";
-        else std::cout << "  ";
-        std::cout << players[i].getName() << " (" << pos[i] << "):   ";
-        for (int j = 0; j < 2; j++)
-            std::cout << hands[i][j] << ' ';
-        std::cout << "\t" << chips[i][stateCode];
-        std::cout << std::endl;
+        // active标记
+        std::cout << (i == active ? " *" : "  ");
+
+        //玩家名：固定宽度
+        std::cout << std::left << std::setw(12) << players[i].getName();
+
+        // 位置 长度=5
+        std::cout << " (" << pos[i] << "):   ";
+
+        // 手牌
+        if (i == hpi) {
+            for (int j = 0; j < 2; j++)
+                std::cout << hands[i][j] << ' ';
+        } else {
+            std::cout << "?? ?? ";
+        }
+
+        // 筹码
+        std::cout << std::right << std::setw(5) << chips[i][stateCode];
+
+        std::cout << "\n";
     }
-    std::cout << "================================================================" << std::endl;
+
+    std::cout << "================================================================\n";
 }
 
 int Game::getPot() const {
@@ -326,6 +340,10 @@ void Game::bet(const int& chip) {
 bool Game::isEnd() const {
     if (stateCode > 3) return 1;
     return _end;
+}
+
+Player Game::getPlayer(const int& pi) const {
+    return players[pi];
 }
 
 std::vector<int> Game::checkWinner() const {

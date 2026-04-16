@@ -2,6 +2,25 @@
 #include<conio.h>
 #ifdef _WIN32
 #include <windows.h>
+void clearScreen() {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD coordScreen = {0, 0};
+    DWORD charsWritten;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    DWORD consoleSize;
+
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
+    consoleSize = csbi.dwSize.X * csbi.dwSize.Y;
+
+    // 填充空格
+    FillConsoleOutputCharacter(hConsole, ' ', consoleSize, coordScreen, &charsWritten);
+
+    // 重置颜色属性
+    FillConsoleOutputAttribute(hConsole, csbi.wAttributes, consoleSize, coordScreen, &charsWritten);
+
+    // 光标回到左上角
+    SetConsoleCursorPosition(hConsole, coordScreen);
+}
 #else   //Linux/macOS
 #include <locale.h>
 #endif

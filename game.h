@@ -62,6 +62,7 @@ public:
     void bet(const int&);
 
     bool isEnd() const;
+    Player getPlayer(const int& pi) const;
     std::vector<int> checkWinner() const;
 
     Position getPosiInfo() const;

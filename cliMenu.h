@@ -12,7 +12,7 @@ void showActionMenu()
 
 void showPositionMenu(const Position& pos)
 {
-	std::cout << "==========================" << std::endl;
+	std::cout << "=== Select Position ======" << std::endl;
 	for (int i = 0; i < pos.getPlayerNum(); i++) {
 		std::cout << "=== " << pos[i] << " \t  [" << i << "]  ===" << std::endl;
 	}
