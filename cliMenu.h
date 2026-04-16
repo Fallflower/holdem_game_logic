@@ -16,6 +16,5 @@ void showPositionMenu(const Position& pos)
 	for (int i = 0; i < pos.getPlayerNum(); i++) {
 		std::cout << "=== " << pos[i] << " \t  [" << i << "]  ===" << std::endl;
 	}
-	std::cout << "=== QUIT GAME    [Esc] ===" << std::endl;
 	std::cout << "==========================" << std::endl;
 }
