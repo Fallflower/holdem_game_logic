@@ -2,17 +2,19 @@
 #define __CARD_H__
 #include<iostream>
 #include<string>
+#include<vector>
 #include<map>
-enum SUIT
+
+enum SUIT	// 调整为c,d,h,s的顺序，与texas solver的顺序一致
 {
-	HEA,	// 红桃
 	CLU,	// 梅花
 	DIA,	// 方片
+	HEA,	// 红桃
 	SPA		// 黑桃
 };
 
 extern const std::map<char, SUIT> smap;
-extern const std::string suit_str[];
+const std::string suit2str(const SUIT&);
 
 enum CARDNUM
 {
@@ -32,7 +34,7 @@ enum CARDNUM
 };
 
 extern const std::map<char, CARDNUM> numap;
-const std::string num_str(const CARDNUM&);
+const std::string num2str(const CARDNUM&);
 
 struct Card
 {
@@ -45,6 +47,9 @@ public:
 
 	SUIT getSuit() const;
 	CARDNUM getNum() const;
+	int toInt() const;
+	uint64_t toLong() const;
+	static uint64_t cardsToLong(const std::vector<Card>& cards);
     std::ostream& output(std::ostream& out) const;
 };
 

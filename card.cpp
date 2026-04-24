@@ -23,7 +23,7 @@ const std::map<char, CARDNUM> numap = {
     {'A', ACE}
 };
 
-const std::string num_str(const CARDNUM& c) {
+const std::string num2str(const CARDNUM& c) {
     switch (c)
     {
     case NUM_2: return "2"; 
@@ -43,13 +43,20 @@ const std::string num_str(const CARDNUM& c) {
     return "";
 }
 
-const std::string suit_str[] = {
-    "\u2665", "\u2663", "\u2666", "\u2660"
-};
+const std::string suit2str(const SUIT& s) {
+    switch (s) {
+    case HEA: return "\u2665";
+    case CLU: return "\u2663";
+    case DIA: return "\u2666";
+    case SPA: return "\u2660";
+    }
+    return "";
+}
+
 Card::Card(CARDNUM c, SUIT s) : suit(s), cnum(c) {}
 
 std::string Card::to_string() const {
-    return num_str(cnum) + suit_str[suit];
+    return num2str(cnum) + suit2str(suit);
 }
 
 SUIT Card::getSuit() const {
@@ -58,6 +65,22 @@ SUIT Card::getSuit() const {
 
 CARDNUM Card::getNum() const {
     return cnum;
+}
+
+int Card::toInt() const {
+    return int(cnum) * 4 + int(suit);
+}
+
+uint64_t Card::toLong() const {
+    return (uint64_t)(1) << this->toInt();
+}
+
+uint64_t Card::cardsToLong(const std::vector<Card>& cards) {
+    uint64_t res = 0;
+    for (const Card& c : cards) {
+        res |= c.toLong();      // 按位或运算更robust，避免重复卡牌导致的错误
+    }
+    return res;
 }
 
 bool operator>(const Card& p1, const Card& p2) {

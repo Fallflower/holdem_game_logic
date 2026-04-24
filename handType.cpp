@@ -5,37 +5,37 @@ std::string HandType::to_string() const {
     switch (rank)
     {
     case HIGH_CARD:
-        temp = std::string("高牌")+num_str(keys[0]);
+        temp = std::string("高牌")+num2str(keys[0]);
         break;
     case ONE_PAIR:
         if (keys.size() > 1)
-            temp = std::string("对")+num_str(keys[0])+" "+num_str(keys[1])+"踢";
+            temp = std::string("对")+num2str(keys[0])+" "+num2str(keys[1])+"踢";
         else
-            temp = std::string("对")+num_str(keys[0]);
+            temp = std::string("对")+num2str(keys[0]);
         break;
     case TWO_PAIR:
-        temp = std::string("对")+num_str(keys[0])+"对"+num_str(keys[1])+" "+num_str(keys[2])+"踢";
+        temp = std::string("对")+num2str(keys[0])+"对"+num2str(keys[1])+" "+num2str(keys[2])+"踢";
         break;
     case THREE_OF_A_KIND:
-        temp = std::string("三条")+num_str(keys[0])+" "+num_str(keys[1])+"踢";
+        temp = std::string("三条")+num2str(keys[0])+" "+num2str(keys[1])+"踢";
         break;
     case STRAIGHT:
-        temp = std::string("顺子")+num_str(keys[0]);
+        temp = std::string("顺子")+num2str(keys[0]);
         break;
     case FLUSH:
-        temp = std::string("同花")+num_str(keys[0]);
+        temp = std::string("同花")+num2str(keys[0]);
         break;
     case FULL_HOUSE:
-        temp = num_str(keys[0])+" "+num_str(keys[1])+"的葫芦";
+        temp = num2str(keys[0])+" "+num2str(keys[1])+"的葫芦";
         break;
     case FOUR_OF_A_KIND:
-        temp = std::string("四条")+num_str(keys[0])+" "+num_str(keys[1])+"踢";
+        temp = std::string("四条")+num2str(keys[0])+" "+num2str(keys[1])+"踢";
         break;
     case STRAIGHT_FLUSH:
         if (keys[0] == ACE)
             temp = "皇家同花顺";
         else
-            temp = std::string("同花顺")+num_str(keys[0]);
+            temp = std::string("同花顺")+num2str(keys[0]);
     default:
         break;
     }
