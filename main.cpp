@@ -1,28 +1,37 @@
 #include "game.h"
 #include "assistant.h"
 #include "cliMenu.h"
+#include <cstdlib>
 
 extern advancedHandType g_advancedRanker;
 
-int main() {
+int main(int argc, char* argv[]) {
     setConsoleToUTF8();
 
     g_advancedRanker.load("./resources/card5_dic_zipped.bin");
 
-    std::cout << "Welcome to Holdem Game with GTO botplayers" << std::endl;
-    std::cout << " Player Name:" << std::flush;
-    std::string name;
-    std::cin >> name;
-    std::cout << " Players Num:" << std::flush;
-    int pn;
-    std::cin >> pn;
-    std::cout << " Initial Chips:" << std::flush;
-    int chips;
-    std::cin >> chips;
+    std::string name = (argc > 1) ? argv[1] : "";
+    int pn = (argc > 2) ? std::atoi(argv[2]) : 0;
+    int chips = (argc > 3) ? std::atoi(argv[3]) : 0;
+    int hppi = (argc > 4) ? std::atoi(argv[4]) : -1;
+
+    if (name.empty()) {
+        std::cout << " Player Name:" << std::flush;
+        std::cin >> name;
+    }
+    if (!pn) {
+        std::cout << " Players Num:" << std::flush;
+        std::cin >> pn;
+    }
+    if (!chips) {
+        std::cout << " Initial Chips:" << std::flush;
+        std::cin >> chips;
+    }
     Position pos(pn, 0);
     showPositionMenu(pos);
-    int hppi;
-    std::cin >> hppi;
+    if (hppi < 0) {
+        std::cin >> hppi;
+    }
 
     Game g(pos, chips, Player(name, chips), hppi);
     while (!g.isEnd()) {

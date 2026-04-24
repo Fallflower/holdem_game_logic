@@ -14,7 +14,7 @@ all: $(targets)		# 生成可执行文件再手动运行，方便调试
 	@echo "Build complete."
 
 run: $(targets)
-	./$(targets)
+	./$(targets) lhy 9 200 0
 
 %.exe: $(objects)
 	$(CXX) $(CFLAGS) $^ -o $@
