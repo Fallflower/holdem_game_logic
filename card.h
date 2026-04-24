@@ -1,9 +1,10 @@
 #ifndef __CARD_H__
 #define __CARD_H__
-#include<iostream>
-#include<string>
-#include<vector>
-#include<map>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cstdint>
+#include <map>
 
 enum SUIT	// 调整为c,d,h,s的顺序，与texas solver的顺序一致
 {

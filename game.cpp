@@ -178,20 +178,18 @@ std::vector<double> Game::calcWinRate(const int& simulations) const {
 
 std::vector<int> Game::checkWinner(std::vector<Card> public_cards) const {
     std::vector<int> res;
-    HandType bestType{HIGH_CARD, {NUM_2}};
+    int bestRank = INT_MAX;
     for (int i = 0; i < playerNum; i++) {
         if (!ftag[i]) {
             std::vector<Card> handCards = hands[i];
             handCards.insert(handCards.end(), public_cards.begin(), public_cards.end());
-            HandType t = evaluate(handCards);
-            switch (compareHandType(t, bestType))
-            {
-            case 1:
-                res.clear(); bestType = t; [[fallthrough]];
-            case 0:
-                res.push_back(i); break;
-            default:
-                break;
+            int rank = advancedEvaluate(handCards);
+            if (rank >= 0 && rank < bestRank) {
+                res.clear();
+                bestRank = rank;
+                res.push_back(i);
+            } else if (rank >= 0 && rank == bestRank) {
+                res.push_back(i);
             }
         }
     }
@@ -248,9 +246,9 @@ void Game::show() const {
             std::cout << hands[i][j] << ' ';
         std::cout << "\t" << chips[i][stateCode];
         if (ftag[i])
-            std::cout << "\t(fold)\t\t" << evaluate(getHands(i));
+            std::cout << "\t(fold)\t\t" << HandType::evaluate(getHands(i));
         else
-            std::cout << "\t" << "胜率: " << std::fixed << std::setprecision(2) << win_rate[i] << "%\t" << evaluate(getHands(i));
+            std::cout << "\t" << "胜率: " << std::fixed << std::setprecision(2) << win_rate[i] << "%\t" << HandType::evaluate(getHands(i));
         std::cout << std::endl;
     }
     std::cout << "================================================================" << std::endl;
@@ -348,19 +346,17 @@ Player Game::getPlayer(const int& pi) const {
 
 std::vector<int> Game::checkWinner() const {
     std::vector<int> res;
-    HandType bestType{HIGH_CARD, {NUM_2}};
+    int bestRank = INT_MAX;
     for (int i = 0; i < playerNum; i++) {
         if (!ftag[i]) {
             std::vector<Card> handCards = getHands(i);
-            HandType t = evaluate(handCards);
-            switch (compareHandType(t, bestType))
-            {
-            case 1:
-                res.clear(); bestType = t; [[fallthrough]];
-            case 0:
-                res.push_back(i); break;
-            default:
-                break;
+            int rank = advancedEvaluate(handCards);
+            if (rank >= 0 && rank < bestRank) {
+                res.clear();
+                bestRank = rank;
+                res.push_back(i);
+            } else if (rank >= 0 && rank == bestRank) {
+                res.push_back(i);
             }
         }
     }

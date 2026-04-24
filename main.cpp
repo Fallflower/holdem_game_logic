@@ -2,8 +2,13 @@
 #include "assistant.h"
 #include "cliMenu.h"
 
+extern advancedHandType g_advancedRanker;
+
 int main() {
     setConsoleToUTF8();
+
+    g_advancedRanker.load("./resources/card5_dic_zipped.bin");
+
     std::cout << "Welcome to Holdem Game with GTO botplayers" << std::endl;
     std::cout << " Player Name:" << std::flush;
     std::string name;
@@ -22,7 +27,7 @@ int main() {
     Game g(pos, chips, Player(name, chips), hppi);
     while (!g.isEnd()) {
         clearScreen();
-        g.showPlayerView();
+        g.show();
         showActionMenu();
         int k;
         k = Choice("Please Choose:", "123\x1b");
@@ -34,6 +39,7 @@ int main() {
             g.call(); break;
         case '3':
             int n;
+            std::cout << "Bet Amount: " << std::flush;
             std::cin >> n;
             g.bet(n); break;
         case 27:  // [Esc]
