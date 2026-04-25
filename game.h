@@ -1,6 +1,7 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 #include "handType.h"
+#include "deck.h"
 #include "position.h"
 #include "player.h"
 #include<random>
@@ -12,9 +13,8 @@ extern const std::string stateStr[];
 class Game
 {
 private:
-    std::vector<Card> pile;
-    std::vector<Card> pubCards;
     std::vector<std::vector<Card>> hands;
+    Deck deck_;
 
     int playerNum;
     std::vector<Player> players;
@@ -34,18 +34,15 @@ private:
 
     void init_game();
     void init_players(const Player&, const int&);
-    void shuffle();
-    void dealCards();
     void checkState();
 
     int getCommited(const int&) const;
 
     void step();    // move "active"
 
-    std::string genPubCardStr() const;
     std::vector<Card> getHands(const int&) const;   // public + hand
 
-    std::vector<double> calcWinRate(const int& simulations = 20000) const;
+    std::vector<double> calcWinRate(const int& simulations = 12288) const;
     std::vector<int> checkWinner(std::vector<Card> public_cards) const;
 public:
     Game(int pn = 3, int d = 0);

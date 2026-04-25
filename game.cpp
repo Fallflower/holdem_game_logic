@@ -1,4 +1,5 @@
 #include "game.h"
+#include <thread>
 
 const std::string stateStr[] = {"preflop", "flop", "turn", "river", "end"};
 class Error : public std::exception
@@ -29,14 +30,10 @@ inline void Swap(ElemType &e1, ElemType &e2)
 }
 
 void Game::init_game() {
-    // pos = Position(playerNum, dealer);
-    for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 13; j++)
-            pile.push_back(Card(CARDNUM(j), SUIT(i)));
     chips = new int*[playerNum];
     for (int i = 0; i < playerNum; i++)
         chips[i] = new int[4]{0};
-    
+
     ftag = new bool[playerNum];
     for (int i = 0; i < playerNum; i++)
         ftag[i] = false;
@@ -44,7 +41,7 @@ void Game::init_game() {
     ctag = new bool[playerNum];
     for (int i = 0; i < playerNum; i++)
         ctag[i] = false;
-    
+
     active = (dealer + 3) % playerNum;
 }
 
@@ -60,22 +57,6 @@ void Game::init_players(const Player& p, const int& c) {
     players[sb].setChips(c - 1);
     players[bb].setChips(c - 2);
     lastBet = bb;
-}
-
-void Game::shuffle() {
-    std::random_device seed;
-    std::ranlux48 engine(seed());
-    std::shuffle(pile.begin(), pile.end(), engine);
-}
-
-void Game::dealCards () {
-    for (int i = 0; i < playerNum; i++)
-        if (pile[i] > pile[i + playerNum])
-            hands.push_back({pile[i], pile[i + playerNum]});
-        else
-            hands.push_back({pile[i + playerNum], pile[i]});
-    int j = 2 * playerNum;
-    pubCards.assign(pile.begin() + j, pile.begin() + j + 5);
 }
 
 void Game::checkState() {
@@ -113,64 +94,62 @@ void Game::step() {
     }
 }
 
-std::string Game::genPubCardStr() const {
-    std::vector<std::string> temp = {"??", "??", "??", "??", "??"};
-    switch (stateCode)
-    {
-    case 3: temp[4] = pubCards[4].to_string(); [[fallthrough]];
-    case 2: temp[3] = pubCards[3].to_string(); [[fallthrough]];
-    case 1:
-        temp[0] = pubCards[0].to_string();
-        temp[1] = pubCards[1].to_string();
-        temp[2] = pubCards[2].to_string();
-        break;
-    default:
-        break;
-    }
-    std::ostringstream oss;
-    for (size_t i = 0; i < temp.size(); i++)
-    {
-        if (i > 0) oss << "  ";
-        oss << temp[i];
-    }
-    return oss.str();
-}
-
 std::vector<Card> Game::getHands(const int& k) const {
     std::vector<Card> temp;
-    if (stateCode)
-        temp.assign(pubCards.begin(), pubCards.end() - 3 + stateCode);
+    if (stateCode) {
+        const auto& pub = deck_.getPubCards();
+        temp.assign(pub.begin(), pub.end() - 3 + stateCode);
+    }
     temp.insert(temp.end(), hands[k].begin(), hands[k].end());
     return temp;
 }
 
 std::vector<double> Game::calcWinRate(const int& simulations) const {
     std::vector<double> win(playerNum, 0.0);
-    if (stateCode < 3) {// 使用蒙特卡洛算法计算翻前、翻牌、转牌阶段胜率
-        int known_pub_cards_num = 0;
-        if (stateCode) known_pub_cards_num = stateCode + 2;
-        std::vector<Card> deck(pile.begin() + 2 * playerNum + known_pub_cards_num, pile.end()); // 取除了手牌和已发出的公牌以外的牌
-        std::random_device seed;
-        std::mt19937 engin(seed());
-        for (int i = 0; i < simulations; i++)
-        {
-            auto tmp = deck;
-            std::shuffle(tmp.begin(), tmp.end(), engin);
-            std::vector<Card> board(tmp.begin(), tmp.begin() + 5 - known_pub_cards_num);
-            board.insert(board.end(), pubCards.begin(), pubCards.begin() + known_pub_cards_num);
-            // std::cout << board.size() << std::endl;
-            auto winners = checkWinner(board);
+    if (stateCode < 3) {
+        int known_pub_cards_num = (stateCode) ? stateCode + 2 : 0;
+        std::vector<Card> deck_remain = deck_.remainingDeck(playerNum, known_pub_cards_num);
 
-            int n = winners.size();
-            for (auto j : winners)
-                win[j] += 1.0 / n;
+        int num_threads = std::thread::hardware_concurrency();
+        if (num_threads == 0) num_threads = 4;
+        int per_thread = simulations / num_threads;
+
+        std::vector<std::vector<double>> local_win(num_threads, std::vector<double>(playerNum, 0.0));
+        std::vector<std::thread> threads;
+
+        for (int t = 0; t < num_threads; t++) {
+            threads.emplace_back([&, t]() {
+                std::mt19937 engin(std::random_device{}());
+                int start = t * per_thread;
+                int end = (t == num_threads - 1) ? simulations : start + per_thread;
+
+                for (int i = start; i < end; i++) {
+                    auto tmp = deck_remain;
+                    std::shuffle(tmp.begin(), tmp.end(), engin);
+                    std::vector<Card> board(tmp.begin(), tmp.begin() + 5 - known_pub_cards_num);
+                    const auto& pub = deck_.getPubCards();
+                    board.insert(board.end(), pub.begin(), pub.begin() + known_pub_cards_num);
+                    auto winners = checkWinner(board);
+                    double share = 1.0 / winners.size();
+                    for (auto j : winners)
+                        local_win[t][j] += share;
+                }
+            });
         }
+
+        for (auto& t : threads) t.join();
+
+        for (int t = 0; t < num_threads; t++)
+            for (int i = 0; i < playerNum; i++)
+                win[i] += local_win[t][i];
     }
-    if (stateCode == 3) {   // 河牌阶段，朴实无华的求胜率
-            auto winners = checkWinner();
-            int n = winners.size();
-            if (n == 1) {win[winners[0]] = 1.0 * simulations;} // 一名胜利者胜率显示100%；多名胜者胜率显示0%
+
+    if (stateCode == 3) {
+        auto winners = checkWinner();
+        int n = winners.size();
+        if (n == 1) win[winners[0]] = 1.0 * simulations;
     }
+
     for (int i = 0; i < playerNum; i++)
         win[i] = 100.0 * win[i] / simulations;
     return win;
@@ -198,9 +177,8 @@ std::vector<int> Game::checkWinner(std::vector<Card> public_cards) const {
 
 Game::Game(int pn, int d): playerNum(pn), dealer(d), stateCode(0), _end(0) {
     init_game();
-    shuffle();
-    dealCards();
-    // stateCode = 3;  // set to 3 (river state) for test
+    deck_.shuffle();
+    deck_.deal(playerNum, hands);
 }
 
 /**
@@ -217,8 +195,8 @@ Game::Game(const Position& p,const int& c, const Player& hp, const int& hppi)
     init_game();
     hpi = hppi;
     init_players(hp, c);
-    shuffle();
-    dealCards();
+    deck_.shuffle();
+    deck_.deal(playerNum, hands);
 }
 
 Game::~Game() {
@@ -233,7 +211,7 @@ Game::~Game() {
 void Game::show() const {
     std::cout << "================================================================" << std::endl;
     std::cout << "  Public: " << std::endl;
-    std::cout << "\t\t\t" << genPubCardStr() << std::endl;
+    std::cout << "\t\t\t" << deck_.pubCardsStr(stateCode) << std::endl;
     std::cout << "   State:  " << stateStr[stateCode] << std::endl;
     std::cout << "     Pot:  " << getPot() << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl;
@@ -257,7 +235,7 @@ void Game::show() const {
 void Game::showPlayerView() const {
     std::cout << "================================================================\n";
     std::cout << "  Public: \n";
-    std::cout << "\t\t\t" << genPubCardStr() << "\n";
+    std::cout << "\t\t\t" << deck_.pubCardsStr(stateCode) << "\n";
     std::cout << "   State:  " << stateStr[stateCode] << "\n";
     std::cout << "     Pot:  " << getPot() << "\n";
     std::cout << "----------------------------------------------------------------\n";
@@ -310,7 +288,7 @@ void Game::fold() {
     int num = 0;
     for (int i = 0; i < playerNum; i++)
         if (!ftag[i]) num++;
-    if (num == 1) {_end = 1; return;}
+    if (num <= 1) {_end = 1; return;}
     
     step();
     checkState();
