@@ -3,10 +3,9 @@
 #include "handType.h"
 #include "deck.h"
 #include "position.h"
-#include "player.h"
-#include<random>
-#include<sstream>
-#include<iomanip>
+#include "humanPlayer.h"
+#include "botPlayer.h"
+#include <memory>
 
 extern const std::string stateStr[];
 
@@ -17,7 +16,7 @@ private:
     Deck deck_;
 
     int playerNum;
-    std::vector<Player> players;
+    std::vector<std::unique_ptr<Player>> players;
     int hpi;        // humanPlayerIndex
     int dealer;
     int stateCode;  // 0, 1, 2, 3
@@ -33,7 +32,7 @@ private:
     bool _end;      // all fold
 
     void init_game();
-    void init_players(const Player&, const int&);
+    void init_players(const HumanPlayer&, const int&);
     void checkState();
 
     int getCommited(const int& pi) const {
@@ -53,7 +52,7 @@ private:
     std::vector<int> checkWinner(std::vector<Card> public_cards) const;
 public:
     Game(int pn = 3, int d = 0);
-    Game(const Position& posInfo, const int& initialChips, const Player& humanPlayer, const int &humanPlayerPosIndex);
+    Game(const Position& posInfo, const int& initialChips, const HumanPlayer& humanPlayer, const int &humanPlayerPosIndex);
     ~Game();
 
     void show() const;
@@ -66,8 +65,8 @@ public:
     void bet(const int&);
 
     bool isEnd() const { return stateCode > 3 || _end; }
-    Player getPlayer(const int& pi) const { return players[pi]; }
-    Player getActPlayer() const { return players[active]; }
+    Player* getPlayer(const int& pi) const { return players[pi].get(); }
+    Player* getActPlayer() const { return players[active].get(); }
     std::vector<int> checkWinner() const;
 
     Position getPosiInfo() const { return pos; }

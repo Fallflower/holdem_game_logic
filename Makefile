@@ -19,7 +19,7 @@ run: $(targets)
 	./$(targets) lhy 9 200 0
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	mkdir $(BUILD_DIR)
 
 %.exe: $(objects)
 	$(CXX) $(CFLAGS) $^ -o $@

@@ -1,54 +1,12 @@
+#ifndef __ASSISTANT_H__
+#define __ASSISTANT_H__
+
 #include <iostream>
-#include<conio.h>
-#ifdef _WIN32
-#include <windows.h>
-void clearScreen() {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD coordScreen = {0, 0};
-    DWORD charsWritten;
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    DWORD consoleSize;
+#include <conio.h>
+#include <iomanip>
+#include <sstream>
 
-    GetConsoleScreenBufferInfo(hConsole, &csbi);
-    consoleSize = csbi.dwSize.X * csbi.dwSize.Y;
-
-    // 填充空格
-    FillConsoleOutputCharacter(hConsole, ' ', consoleSize, coordScreen, &charsWritten);
-
-    // 重置颜色属性
-    FillConsoleOutputAttribute(hConsole, csbi.wAttributes, consoleSize, coordScreen, &charsWritten);
-
-    // 光标回到左上角
-    SetConsoleCursorPosition(hConsole, coordScreen);
-}
-#else   //Linux/macOS
-#include <locale.h>
-#endif
-
-void setConsoleToUTF8() {
-#ifdef _WIN32
-    // Windows系统
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-    
-    // 还需要设置标准输出模式以支持UTF-8
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hOut != INVALID_HANDLE_VALUE) {
-        DWORD dwMode = 0;
-        GetConsoleMode(hOut, &dwMode);
-        dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-        SetConsoleMode(hOut, dwMode);
-    }
-#else
-    // Linux/macOS系统
-    setlocale(LC_ALL, "en_US.UTF-8");
-    std::locale::global(std::locale("en_US.UTF-8"));
-    std::wcout.imbue(std::locale("en_US.UTF-8"));
-    std::wcin.imbue(std::locale("en_US.UTF-8"));
-#endif
-}
-
-int Pos(char ch, const char* str)			// 返回指定字符ch在字符串str中的下标。不存在时返回-1
+inline int Pos(char ch, const char* str)			// 返回指定字符ch在字符串str中的下标。不存在时返回-1
 {
 	int i;
 	for (i = 0; str[i] != '\0'; i++)
@@ -57,7 +15,7 @@ int Pos(char ch, const char* str)			// 返回指定字符ch在字符串str中的
 	return -1;
 }
 
-int Choice(const char* prompt, const char* options)		// 函数定义。输出提示信息prompt，输入选择的字符并返回。
+inline int Choice(const char* prompt, const char* options)		// 函数定义。输出提示信息prompt，输入选择的字符并返回。
 {
 	int key;
 	std::cout << prompt << "{";
@@ -83,3 +41,23 @@ int Choice(const char* prompt, const char* options)		// 函数定义。输出提
 	std::cout << std::endl;
 	return key;
 }
+
+class Error : public std::exception
+{
+private:
+	unsigned int m_code;
+	std::string m_what;
+	std::string full_mes;
+public:
+	Error(unsigned int code,  const std::string &what_arg): m_code(code), m_what(what_arg){
+		full_mes =  "Error code: " + std::to_string(m_code) + "\nError message: " + m_what;
+	}
+	virtual const char * what(void) const noexcept override
+	{
+		// char* mesg = new char[text.length()+1];
+		// strcpy(mesg, text.c_str());
+		return full_mes.c_str();
+	}
+};
+
+#endif

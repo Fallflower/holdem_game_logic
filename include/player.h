@@ -4,8 +4,17 @@
 #include "card.h"
 #include <vector>
 
+enum ACTION {
+	FOLD,
+	CHECK,
+	CALL,
+	BET,
+	RAISE,
+	ALLIN
+};
+
 class Player {
-private:
+protected:
     std::string name;
     std::vector<Card> hand;
     int chips;
@@ -13,18 +22,16 @@ private:
 public:
 	Player(const std::string &name, int startingChips);
 
-	void setHand(const std::vector<Card> &cards); // Add a card to the hand
-	void clearHand();					// Reset hand (for new round)
+	void setName(const std::string &newName) { name = newName; }
+	void setHand(const std::vector<Card> &cards);
 	
 	void setChips(const int& amount) {chips = amount; }
 	void addChips(const int& amount) {chips += amount;}
-	void takeAction();
+	virtual ACTION makeAction(const int&, int &) = 0;
 
 	int getChips() const { return chips; }
 	std::string getName() const { return name; }
 	std::vector<Card> getHand() const { return hand; }
-
-	void showActionMenu(const int& chipsToCall) const;
 };
 
 

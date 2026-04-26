@@ -1,24 +1,10 @@
 #include "game.h"
+#include "assistant.h"
 #include <thread>
+#include <random>
 
 const std::string stateStr[] = {"preflop", "flop", "turn", "river", "end"};
-class Error : public std::exception
-{
-private:
-	unsigned int m_code;
-	std::string m_what;
-	std::string full_mes;
-public:
-	Error(unsigned int code,  const std::string &what_arg): m_code(code), m_what(what_arg){
-		full_mes =  "Error code: " + std::to_string(m_code) + "\nError message: " + m_what;
-	}
-	virtual const char * what(void) const noexcept override
-	{
-		// char* mesg = new char[text.length()+1];
-		// strcpy(mesg, text.c_str());
-		return full_mes.c_str();
-	}
-};
+
 
 template <class ElemType >
 inline void Swap(ElemType &e1, ElemType &e2)
@@ -45,17 +31,17 @@ void Game::init_game() {
     active = (dealer + 3) % playerNum;
 }
 
-void Game::init_players(const Player& p, const int& c) {
-    for (int i = 1; i < playerNum; i++) // create pn-1 botPlayers
-        players.push_back(Player("BotPlayer"+std::to_string(i), c));
-    players.insert(players.begin() + hpi, p);
+void Game::init_players(const HumanPlayer& p, const int& c) {
+    for (int i = 1; i < playerNum; i++)
+        players.push_back(std::make_unique<BotPlayer>("BotPlayer"+std::to_string(i), c));
+    players.insert(players.begin() + hpi, std::make_unique<HumanPlayer>(p));
     // commit blinds
     int sb = pos.find(" S B ");
     int bb = pos.find(" B B ");
     chips[sb][0] = 1;
     chips[bb][0] = 2;
-    players[sb].setChips(c - 1);
-    players[bb].setChips(c - 2);
+    players[sb]->setChips(c - 1);
+    players[bb]->setChips(c - 2);
     lastBet = bb;
 }
 
@@ -174,7 +160,7 @@ Game::Game(int pn, int d): playerNum(pn), dealer(d), stateCode(0), _end(0) {
  * @param hp (humanPlayer) - 人类玩家对象引用，包含姓名、当前手牌等信息
  * @param hppi (hp position index) - 人类玩家在桌面的位置标识
  */
-Game::Game(const Position& p,const int& c, const Player& hp, const int& hppi)
+Game::Game(const Position& p,const int& c, const HumanPlayer& hp, const int& hppi)
 : playerNum(p.getPlayerNum()), dealer(p.getDealer()), stateCode(0), _end(0) {
     pos = p;
     init_game();
@@ -230,7 +216,7 @@ void Game::showPlayerView() const {
         std::cout << (i == active ? " *" : "  ");
 
         //玩家名：固定宽度
-        std::cout << std::left << std::setw(12) << players[i].getName();
+        std::cout << std::left << std::setw(12) << players[i]->getName();
 
         // 位置 长度=5
         std::cout << " (" << pos[i] << "):   ";

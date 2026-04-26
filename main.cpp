@@ -33,37 +33,18 @@ int main(int argc, char* argv[]) {
         std::cin >> hppi;
     }
 
-    Game g(pos, chips, Player(name, chips), hppi);
+    Game g(pos, chips, HumanPlayer(name, chips), hppi);
     while (!g.isEnd()) {
         clearScreen();
         g.show();
-        // showActionMenu();
-        g.getActPlayer().showActionMenu(g.getChipsToCall());
-        int k;
-        k = Choice("Please Choose:", "123\x1b");
-        switch (k)
-        {
-        case '1':
-            g.fold(); break;
-        case '2':
-            g.call(); break;
-        case '3':
-            int n;
-            std::cout << "Bet Amount: " << std::flush;
-            std::cin >> n;
-            g.bet(n); break;
-        case 27:  // [Esc]
-            return 0;
-        default:
-            break;
-        }
+        break;
     }
 
     auto winners = g.checkWinner();
     int pot = g.getPot();
     int share = pot / winners.size();
     for (size_t i = 0; i < winners.size(); i++) {
-        std::cout << g.getPlayer(winners[i]).getName() << " won " << share << " chips" << std::endl;
+        std::cout << g.getPlayer(winners[i])->getName() << " won " << share << " chips" << std::endl;
     }
     return 0;
 }
