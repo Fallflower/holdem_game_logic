@@ -1,14 +1,15 @@
 .PHONY: clean all run
 
 CXX = g++
-# CFLAGS = -std=c++17 -g	# for debug
+# CFLAGS = -std=c++17 -g   # for debug
 CFLAGS = -Wall -Wextra -std=c++17 -MMD -MP -Iinclude
 targets = main.exe
+BUILD_DIR = build
 
 VPATH = src
 
 sources = $(wildcard *.cpp) $(wildcard src/*.cpp)
-objects = $(addsuffix .o,$(basename $(notdir $(sources))))
+objects = $(addprefix $(BUILD_DIR)/, $(addsuffix .o,$(basename $(notdir $(sources)))))
 deps = $(objects:.o=.d)
 
 all: $(targets)
@@ -17,13 +18,17 @@ all: $(targets)
 run: $(targets)
 	./$(targets) lhy 9 200 0
 
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
 %.exe: $(objects)
 	$(CXX) $(CFLAGS) $^ -o $@
 
-%.o: %.cpp
+$(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)
 	$(CXX) $(CFLAGS) -c $< -o $@
 
 -include $(deps)
 
 clean:
-	del $(objects) $(deps) $(targets)
+	rmdir /s /q $(BUILD_DIR)
+	del /f $(targets)
