@@ -16,14 +16,15 @@ public:
 	void setHand(const std::vector<Card> &cards); // Add a card to the hand
 	void clearHand();					// Reset hand (for new round)
 	
-	void setChips(const int&);
-	void fold();		  // set folded=true
+	void setChips(const int& amount) {chips = amount; }
+	void addChips(const int& amount) {chips += amount;}
 	void takeAction();
 
-	int getChips() const;
-	std::string getName() const;
-	std::vector<Card> getHand() const;
+	int getChips() const { return chips; }
+	std::string getName() const { return name; }
+	std::vector<Card> getHand() const { return hand; }
 
+	void showActionMenu(const int& chipsToCall) const;
 };
 
 

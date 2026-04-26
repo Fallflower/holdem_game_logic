@@ -78,21 +78,6 @@ void Game::checkState() {
     }
 }
 
-int Game::getCommited(const int& pi) const
-{
-    int sum = 0;
-    for (int i = 0; i <= stateCode; i++)
-        sum += chips[pi][i];
-    return sum;
-}
-
-void Game::step() {
-    // std::cout << "active move" << std::endl;
-    active = (active + 1) % playerNum;
-    while (ftag[active]) {
-        active = (active + 1) % playerNum;
-    }
-}
 
 std::vector<Card> Game::getHands(const int& k) const {
     std::vector<Card> temp;
@@ -221,7 +206,7 @@ void Game::show() const {
         else std::cout << "  ";
         std::cout << "Player" << i + 1 << " (" << pos[i] << "):   ";
         for (int j = 0; j < 2; j++)
-            std::cout << hands[i][j] << ' ';
+            std::cout << hands[i][j].toString() << ' ';
         std::cout << "\t" << chips[i][stateCode];
         if (ftag[i])
             std::cout << "\t(fold)\t\t" << HandType::evaluate(getHands(i));
@@ -235,7 +220,7 @@ void Game::show() const {
 void Game::showPlayerView() const {
     std::cout << "================================================================\n";
     std::cout << "  Public: \n";
-    std::cout << "\t\t\t" << deck_.pubCardsStr(stateCode) << "\n";
+    std::cout << "\t" << deck_.pubCardsColStr(stateCode) << "\n";
     std::cout << "   State:  " << stateStr[stateCode] << "\n";
     std::cout << "     Pot:  " << getPot() << "\n";
     std::cout << "----------------------------------------------------------------\n";
@@ -255,7 +240,7 @@ void Game::showPlayerView() const {
             for (int j = 0; j < 2; j++)
                 std::cout << hands[i][j] << ' ';
         } else {
-            std::cout << "?? ?? ";
+            std::cout << "[??] [??] ";
         }
 
         // 筹码
@@ -273,14 +258,6 @@ int Game::getPot() const {
         for (int j = 0; j <= stateCode; j++)
             temp += chips[i][j];
     return temp;
-}
-
-int Game::getChipsToCall() const {
-    return commit[stateCode] - chips[active][stateCode];
-}
-
-int Game::getState() const {
-    return stateCode;
 }
 
 void Game::fold() {
@@ -313,15 +290,6 @@ void Game::bet(const int& chip) {
     step();
 }
 
-bool Game::isEnd() const {
-    if (stateCode > 3) return 1;
-    return _end;
-}
-
-Player Game::getPlayer(const int& pi) const {
-    return players[pi];
-}
-
 std::vector<int> Game::checkWinner() const {
     std::vector<int> res;
     int bestRank = INT_MAX;
@@ -339,8 +307,4 @@ std::vector<int> Game::checkWinner() const {
         }
     }
     return res;
-}
-
-Position Game::getPosiInfo() const {
-    return pos;
 }

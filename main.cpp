@@ -37,7 +37,8 @@ int main(int argc, char* argv[]) {
     while (!g.isEnd()) {
         clearScreen();
         g.show();
-        showActionMenu();
+        // showActionMenu();
+        g.getActPlayer().showActionMenu(g.getChipsToCall());
         int k;
         k = Choice("Please Choose:", "123\x1b");
         switch (k)
@@ -58,10 +59,11 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    std::cout << "Winner: ";
-    for (auto i : g.checkWinner()) {
-        std::cout << g.getPlayer(i).getName() << "; ";
+    auto winners = g.checkWinner();
+    int pot = g.getPot();
+    int share = pot / winners.size();
+    for (size_t i = 0; i < winners.size(); i++) {
+        std::cout << g.getPlayer(winners[i]).getName() << " won " << share << " chips" << std::endl;
     }
-    std::cout << std::endl;
     return 0;
 }

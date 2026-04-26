@@ -36,9 +36,16 @@ private:
     void init_players(const Player&, const int&);
     void checkState();
 
-    int getCommited(const int&) const;
+    int getCommited(const int& pi) const {
+        int sum = 0;
+        for (int i = 0; i <= stateCode; i++) sum += chips[pi][i];
+        return sum;
+    }
 
-    void step();    // move "active"
+    void step() {   // move "active"
+        active = (active + 1) % playerNum;
+        while (ftag[active]) active = (active + 1) % playerNum;
+    }
 
     std::vector<Card> getHands(const int&) const;   // public + hand
 
@@ -52,17 +59,18 @@ public:
     void show() const;
     void showPlayerView() const;
     int getPot() const;
-    int getChipsToCall() const;    // return the num of chips should be added
-    int getState() const;
+    int getChipsToCall() const { return commit[stateCode] - chips[active][stateCode]; }
+    int getState() const { return stateCode; }
     void fold();
     void call();     
     void bet(const int&);
 
-    bool isEnd() const;
-    Player getPlayer(const int& pi) const;
+    bool isEnd() const { return stateCode > 3 || _end; }
+    Player getPlayer(const int& pi) const { return players[pi]; }
+    Player getActPlayer() const { return players[active]; }
     std::vector<int> checkWinner() const;
 
-    Position getPosiInfo() const;
+    Position getPosiInfo() const { return pos; }
 
 };
 #endif

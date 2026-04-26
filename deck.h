@@ -17,6 +17,7 @@ public:
 
     std::vector<Card> remainingDeck(int playerNum, int knownPubCards) const;
     std::string pubCardsStr(int stateCode) const;
+    std::string pubCardsColStr(int stateCode) const;
 
 private:
     std::vector<Card> pile_;

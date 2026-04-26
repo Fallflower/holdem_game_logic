@@ -44,7 +44,8 @@ private:
 	CARDNUM cnum;
 public:
 	Card(CARDNUM c = ACE, SUIT s = HEA);
-	std::string to_string() const;
+	std::string toString() const;
+	std::string toColorString() const;
 
 	SUIT getSuit() const;
 	CARDNUM getNum() const;

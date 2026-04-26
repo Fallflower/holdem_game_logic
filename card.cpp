@@ -55,16 +55,17 @@ const std::string suit2str(const SUIT& s) {
 
 Card::Card(CARDNUM c, SUIT s) : suit(s), cnum(c) {}
 
-std::string Card::to_string() const {
+std::string Card::toString() const {
+    return num2str(cnum) + suit2str(suit);
+}
+
+std::string Card::toColorString() const {
     // ANSI color: red for hearts/diamonds, black for clubs/spades
     std::string color = (suit == HEA || suit == DIA) ? "\033[31m" : "\033[30m";
     std::string bg = "\033[47m";
     std::string reset = "\033[0m";
 
-    // Rank: "10" for NUM_10, space-padded single char for others (2-wide)
-    std::string rank = (cnum == NUM_10) ? "10" : " " + num2str(cnum);
-
-    return color + bg + "[" + rank + suit2str(suit) + "]" + reset;
+    return color + bg + "[" + num2str(cnum) + suit2str(suit) + "]" + reset;
 }
 
 SUIT Card::getSuit() const {
@@ -104,7 +105,7 @@ bool operator==(const Card &p1, const Card &p2) {
 }
 std::ostream &Card::output(std::ostream &out) const
 {
-    out << to_string();
+    out << toColorString();
     return out;
 }
 
