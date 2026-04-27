@@ -35,6 +35,7 @@ std::vector<Card> Deck::remainingDeck(int playerNum, int knownPubCards) const {
 std::string Deck::pubCardsStr(int stateCode) const {
     std::vector<std::string> temp = {"??", "??", "??", "??", "??"};
     switch (stateCode) {
+    case 4: [[fallthrough]];
     case 3: temp[4] = pubCards_[4].toString(); [[fallthrough]];
     case 2: temp[3] = pubCards_[3].toString(); [[fallthrough]];
     case 1:
@@ -55,6 +56,7 @@ std::string Deck::pubCardsStr(int stateCode) const {
 std::string Deck::pubCardsColStr(int stateCode) const {
     std::vector<std::string> temp = {"????", "????", "????", "????", "????"};
     switch (stateCode) {
+    case 4: [[fallthrough]];
     case 3: temp[4] = pubCards_[4].toColorString(); [[fallthrough]];
     case 2: temp[3] = pubCards_[3].toColorString(); [[fallthrough]];
     case 1:

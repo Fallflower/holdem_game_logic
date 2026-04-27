@@ -36,14 +36,17 @@ int main(int argc, char* argv[]) {
     Game g(pos, chips, HumanPlayer(name, chips), hppi);
     while (!g.isEnd()) {
         clearScreen();
-        g.show();
-        break;
+        g.showPlayerView();
+        g.toAct();
     }
+    std::cout << "\nGame Over! Final Results:" << std::endl;
+    g.show();
 
     auto winners = g.checkWinner();
     int pot = g.getPot();
     int share = pot / winners.size();
     for (size_t i = 0; i < winners.size(); i++) {
+        g.getPlayer(winners[i])->addChips(share);
         std::cout << g.getPlayer(winners[i])->getName() << " won " << share << " chips" << std::endl;
     }
     return 0;

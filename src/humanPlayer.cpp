@@ -33,12 +33,15 @@ ACTION HumanPlayer::makeAction(const int& chipsToCall, int &betAmount)
     {
     case 1:
         k = Choice("Please Choose:", "123\x1b");
-        switch (k)
+        switch (k) // 注意，所有的bet和raise都需要输入金额，统一到最后处理
         {
         case '1':
             return CHECK;
         case '3':
+            betAmount = chips;
             return ALLIN;
+        case '\x1b':
+            exit(0);
         default:
             break;
         }
@@ -50,9 +53,14 @@ ACTION HumanPlayer::makeAction(const int& chipsToCall, int &betAmount)
         case '1':
             return FOLD;
         case '2':
+            decChips(chipsToCall);
             return CALL;
         case '4':
+            betAmount = chips;
+            setChips(0);
             return ALLIN;
+        case '\x1b':
+            exit(0);
         default:
             break;
         }
@@ -64,7 +72,11 @@ ACTION HumanPlayer::makeAction(const int& chipsToCall, int &betAmount)
         case '1':
             return CHECK;
         case '2':
+            betAmount = chips;
+            setChips(0);
             return ALLIN;
+        case '\x1b':
+            exit(0);
         default:
             break;
         }

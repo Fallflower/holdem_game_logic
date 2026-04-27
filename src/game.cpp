@@ -75,6 +75,14 @@ std::vector<Card> Game::getHands(const int& k) const {
     return temp;
 }
 
+std::vector<Card> Game::getFinalHands(const int& k) const {
+    std::vector<Card> temp;
+    const auto& pub = deck_.getPubCards();
+    temp.assign(pub.begin(), pub.end());
+    temp.insert(temp.end(), hands[k].begin(), hands[k].end());
+    return temp;
+}
+
 std::vector<double> Game::calcWinRate(const int& simulations) const {
     std::vector<double> win(playerNum, 0.0);
     if (stateCode < 3) {
@@ -115,7 +123,7 @@ std::vector<double> Game::calcWinRate(const int& simulations) const {
                 win[i] += local_win[t][i];
     }
 
-    if (stateCode == 3) {
+    if (stateCode >= 3) {
         auto winners = checkWinner();
         int n = winners.size();
         if (n == 1) win[winners[0]] = 1.0 * simulations;
@@ -146,7 +154,7 @@ std::vector<int> Game::checkWinner(std::vector<Card> public_cards) const {
     return res;
 }
 
-Game::Game(int pn, int d): playerNum(pn), dealer(d), stateCode(0), _end(0) {
+Game::Game(int pn, int d): playerNum(pn), dealer(d), stateCode(0) {
     init_game();
     deck_.shuffle();
     deck_.deal(playerNum, hands);
@@ -161,7 +169,7 @@ Game::Game(int pn, int d): playerNum(pn), dealer(d), stateCode(0), _end(0) {
  * @param hppi (hp position index) - 人类玩家在桌面的位置标识
  */
 Game::Game(const Position& p,const int& c, const HumanPlayer& hp, const int& hppi)
-: playerNum(p.getPlayerNum()), dealer(p.getDealer()), stateCode(0), _end(0) {
+: playerNum(p.getPlayerNum()), dealer(p.getDealer()), stateCode(0) {
     pos = p;
     init_game();
     hpi = hppi;
@@ -190,7 +198,8 @@ void Game::show() const {
     for (int i = 0; i < playerNum; i++) {
         if (i == active) std::cout << " *";
         else std::cout << "  ";
-        std::cout << "Player" << i + 1 << " (" << pos[i] << "):   ";
+        std::cout << std::left << std::setw(12) << players[i]->getName();
+        std::cout << " (" << pos[i] << "):   ";
         for (int j = 0; j < 2; j++)
             std::cout << hands[i][j].toString() << ' ';
         std::cout << "\t" << chips[i][stateCode];
@@ -206,7 +215,7 @@ void Game::show() const {
 void Game::showPlayerView() const {
     std::cout << "================================================================\n";
     std::cout << "  Public: \n";
-    std::cout << "\t" << deck_.pubCardsColStr(stateCode) << "\n";
+    std::cout << "\t\t" << deck_.pubCardsColStr(stateCode) << "\n";
     std::cout << "   State:  " << stateStr[stateCode] << "\n";
     std::cout << "     Pot:  " << getPot() << "\n";
     std::cout << "----------------------------------------------------------------\n";
@@ -214,13 +223,9 @@ void Game::showPlayerView() const {
     for (int i = 0; i < playerNum; i++) {
         // active标记
         std::cout << (i == active ? " *" : "  ");
-
         //玩家名：固定宽度
         std::cout << std::left << std::setw(12) << players[i]->getName();
-
-        // 位置 长度=5
         std::cout << " (" << pos[i] << "):   ";
-
         // 手牌
         if (i == hpi) {
             for (int j = 0; j < 2; j++)
@@ -230,12 +235,10 @@ void Game::showPlayerView() const {
         }
 
         // 筹码
-        std::cout << std::right << std::setw(5) << chips[i][stateCode];
-
-        std::cout << "\n";
+        std::cout << std::right << std::setw(5) << chips[i][stateCode] << " BB\n";
     }
 
-    std::cout << "================================================================\n";
+    std::cout << "================================================================" << std::endl;
 }
 
 int Game::getPot() const {
@@ -247,11 +250,15 @@ int Game::getPot() const {
 }
 
 void Game::fold() {
+    if (hpi == active) {    // 唯一的人类玩家选择弃牌，游戏结束
+        std::cout << "You folded. Better luck next time!" << std::endl;
+        stateCode = 4;
+    }
     ftag[active] = 1;
     int num = 0;
     for (int i = 0; i < playerNum; i++)
         if (!ftag[i]) num++;
-    if (num <= 1) {_end = 1; return;}
+    if (num <= 1) {stateCode = 4; return;}
     
     step();
     checkState();
@@ -276,12 +283,24 @@ void Game::bet(const int& chip) {
     step();
 }
 
+void Game::toAct() { // 玩家筹码修改在Player的makeAction中处理
+    int betAmount = 0;
+    ACTION action = players[active]->makeAction(getChipsToCall(), betAmount);
+    if (action == FOLD) {
+        fold();
+    } else if (action == CHECK || action == CALL) {
+        call();
+    } else if (action == BET || action == RAISE || action == ALLIN) {
+        bet(betAmount);
+    }
+}
+
 std::vector<int> Game::checkWinner() const {
     std::vector<int> res;
     int bestRank = INT_MAX;
     for (int i = 0; i < playerNum; i++) {
         if (!ftag[i]) {
-            std::vector<Card> handCards = getHands(i);
+            std::vector<Card> handCards = getFinalHands(i);
             int rank = advancedEvaluate(handCards);
             if (rank >= 0 && rank < bestRank) {
                 res.clear();
