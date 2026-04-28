@@ -28,7 +28,22 @@ void Game::init_game() {
     for (int i = 0; i < playerNum; i++)
         ctag[i] = false;
 
+    atag = new bool[playerNum];
+    for (int i = 0; i < playerNum; i++)
+        atag[i] = false;
+
     active = (dealer + 3) % playerNum;
+}
+
+void Game::reset_game() {
+    for (int i = 0; i < playerNum; i++) {
+        for (int j = 0; j < 4; j++)
+            chips[i][j] = 0;
+        ftag[i] = false;
+        ctag[i] = false;
+        atag[i] = false;
+    }
+    
 }
 
 void Game::init_players(const HumanPlayer& p, const int& c) {
@@ -49,7 +64,7 @@ void Game::checkState() {
     int i;
     for (i = 0; i < playerNum; i++)
     {
-        if (ftag[i]) continue;
+        if (ftag[i] || atag[i]) continue;
         if (!ctag[i]) break;
     }
     if (i == playerNum) {   // 进入下一阶段
@@ -184,6 +199,7 @@ Game::~Game() {
     delete[] chips;
     delete[] ftag;
     delete[] ctag;
+    delete[] atag;
 }
 
 
@@ -199,9 +215,9 @@ void Game::show() const {
         if (i == active) std::cout << " *";
         else std::cout << "  ";
         // 玩家名
-        std::cout << (i==hpi) ? "HP"+std::to_string(i) : "BP"+std::to_string(i);
+        std::cout << (i==hpi ? "HP"+std::to_string(i) : "BP"+std::to_string(i));
         std::cout << " (" << pos[i] << ")";
-        // 筹码
+        // 后手筹码
         std::cout << std::right << std::setw(5) << players[i]->getChips() << " BB:\t";
         for (int j = 0; j < 2; j++)
             std::cout << hands[i][j].toString() << ' ';
@@ -228,7 +244,9 @@ void Game::showPlayerView() const {
         std::cout << (i == active ? " *" : "  ");
         //玩家名：固定宽度
         std::cout << std::left << std::setw(12) << players[i]->getName();
-        std::cout << " (" << pos[i] << "):   ";
+        std::cout << " (" << pos[i] << ")";
+        // 后手筹码
+        std::cout << std::right << std::setw(5) << players[i]->getChips() << " BB:\t";
         // 手牌
         if (i == hpi) {
             for (int j = 0; j < 2; j++)
@@ -258,10 +276,16 @@ void Game::fold() {
         stateCode = 4;
     }
     ftag[active] = 1;
+    // 当只剩下一个玩家时，游戏结束
     int num = 0;
     for (int i = 0; i < playerNum; i++)
         if (!ftag[i]) num++;
     if (num <= 1) {stateCode = 4; return;}
+    // 当只剩下Allin玩家和fold玩家时，游戏结束
+    num = 0;
+    for (int i = 0; i < playerNum; i++)
+        if (!ftag[i] && !atag[i]) num++;
+    if (num == 0) {stateCode = 4; return; }
     
     step();
     checkState();
@@ -276,14 +300,40 @@ void Game::call() {
 
 void Game::bet(const int& chip) {
     if (chips[active][stateCode] + chip <= commit[stateCode])
-        throw Error(1, "Invalid betting scale.");
+        throw Error(1, "System Error: Invalid betting scale.");
     for (int i = 0; i < playerNum; i++)
-        ctag[i] = false;    // 加注将清空其他人的check tag
+        if (!atag[i])       // 只有非all-in玩家才会被清空check tag
+            ctag[i] = false;// 加注将清空其他人的check tag
     ctag[active] = true;    // 加注将自己标记成为check tag
     chips[active][stateCode] += chip;
     commit[stateCode] = chips[active][stateCode];
     lastBet = active;
     step();
+}
+
+void Game::allin(const int& chip) {
+    atag[active] = true;
+    // 当只剩下Allin玩家和fold玩家时，游戏结束
+    int num = 0;
+    for (int i = 0; i < playerNum; i++)
+        if (!ftag[i] && !atag[i]) num++;
+    if (num == 0) {stateCode = 4; return; }
+    // allin是特殊的bet
+    bet(chip);
+}
+
+void Game::allinToCall(const int& chip) {
+    ctag[active] = true;    // Allintocall将自己标记成为check tag, 同时不会清空他人的check tag
+    atag[active] = true;
+    chips[active][stateCode] += chip;
+    commit[stateCode] = chips[active][stateCode];
+    // 当只剩下Allin玩家和fold玩家时，游戏结束
+    int num = 0;
+    for (int i = 0; i < playerNum; i++)
+        if (!ftag[i] && !atag[i]) num++;
+    if (num == 0) {stateCode = 4; return; }
+    step();
+    checkState();
 }
 
 void Game::toAct() { // 玩家筹码修改在Player的makeAction中处理
@@ -293,9 +343,28 @@ void Game::toAct() { // 玩家筹码修改在Player的makeAction中处理
         fold();
     } else if (action == CHECK || action == CALL) {
         call();
-    } else if (action == BET || action == RAISE || action == ALLIN) {
+    } else if (action == BET || action == RAISE) {
         bet(betAmount);
+    } else if (action == ALLIN) {
+        allin(betAmount);
+    } else if (action == ALLINTOCALL) {
+        allinToCall(betAmount);
     }
+}
+
+void Game::afterEnd() {
+    if (!isEnd()) return;
+    // 先把钱分了
+    auto winners = checkWinner();
+    int pot = getPot();
+    int share = pot / winners.size();
+    for (size_t i = 0; i < winners.size(); i++)
+        players[winners[i]]->addChips(share);
+    // 再展示结果
+    std::cout << "\nGame Over! Final Results:" << std::endl;
+    show();
+    for (size_t i = 0; i < winners.size(); i++)
+        std::cout << getPlayer(winners[i])->getName() << " won " << share << " chips" << std::endl;
 }
 
 std::vector<int> Game::checkWinner() const {

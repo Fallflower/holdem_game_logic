@@ -1,9 +1,23 @@
 #include "position.h"
+#include "assistant.h"
 
+/*
+ * 根据playerNum初始化位置字符串
+ * pn=2 -> {SB, BB}
+ * pn=3 -> {SB, BB, D}
+ * pn=4 -> {SB, BB, UTG, D}
+ * pn=5 -> {SB, BB, UTG, CO, D}
+ * pn=6 -> {SB, BB, UTG, HJ, CO, D}
+ * pn=7 -> {SB, BB, UTG, MP, HJ, CO, D}
+ * pn>7 -> {SB, BB, UTG, UTG+1, ... , MP, HJ, CO, D}
+ */
 void Position::init(int pn) {
+    if (pn < 2)
+        throw Error(100, "System Error: Player number must be at least 2.");
     poss = {" S B ", " B B "};
     switch (pn)
     {
+    case 2: return;
     default: [[fallthrough]];
     case 7:
         poss.push_back(" M P "); [[fallthrough]];
@@ -27,7 +41,6 @@ void Position::adjust(int pn, int di) {
         temp.push_back(poss[(pn - 1 - di + i) % pn]);
     poss = temp; 
 }
-
 
 Position::Position(int pn, int di) : dealer(di) {
     init(pn);

@@ -28,20 +28,22 @@ private:
     int **chips;    // [playerNum, 4] chips commitment of each player at each round
     bool *ftag;     // fold tags
     bool *ctag;     // check tags
+    bool *atag;     // all-in tags
 
     void init_game();
+    void reset_game();
     void init_players(const HumanPlayer&, const int&);
     void checkState();
 
-    int getCommited(const int& pi) const {
+    int getPlayerCommited(const int& pi) const {
         int sum = 0;
-        for (int i = 0; i <= stateCode; i++) sum += chips[pi][i];
+        for (int i = 0; i < 4; i++) sum += chips[pi][i];
         return sum;
     }
 
     void step() {   // move "active"
         active = (active + 1) % playerNum;
-        while (ftag[active]) active = (active + 1) % playerNum;
+        while (ftag[active] || atag[active]) active = (active + 1) % playerNum;
     }
 
     std::vector<Card> getHands(const int&) const;   // 3/4/5 + 2
@@ -62,7 +64,10 @@ public:
     void fold();
     void call();     
     void bet(const int&);
+    void allin(const int&);
+    void allinToCall(const int&);
     void toAct();
+    void afterEnd();
 
     bool isEnd() const { return stateCode == 4; }
     Player* getPlayer(const int& pi) const { return players[pi].get(); }

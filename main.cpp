@@ -39,15 +39,8 @@ int main(int argc, char* argv[]) {
         g.showPlayerView();
         g.toAct();
     }
-
-    auto winners = g.checkWinner();
-    int pot = g.getPot();
-    int share = pot / winners.size();
-    for (size_t i = 0; i < winners.size(); i++) {
-        g.getPlayer(winners[i])->addChips(share);
-        std::cout << g.getPlayer(winners[i])->getName() << " won " << share << " chips" << std::endl;
-    }
-    std::cout << "\nGame Over! Final Results:" << std::endl;
-    g.show();
+    clearScreen();
+    g.showPlayerView();
+    g.afterEnd();
     return 0;
 }

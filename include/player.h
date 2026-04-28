@@ -10,8 +10,11 @@ enum ACTION {
 	CALL,
 	BET,
 	RAISE,
-	ALLIN
+	ALLIN,
+	ALLINTOCALL
 };
+
+inline std::string action2str(const ACTION&);
 
 class Player {
 	friend class Game;
@@ -21,6 +24,7 @@ protected:
     int chips;
 
 	void decChips(const int& amount) {chips -= amount;}
+	void addChips(const int& amount) {chips += amount;}
 	void setChips(const int& amount) {chips = amount; }
 	void setHand(const std::vector<Card> &cards);
 	virtual ACTION makeAction(const int&, int &) = 0;
@@ -28,7 +32,6 @@ public:
 	Player(const std::string &name, int startingChips);
 
 	void setName(const std::string &newName) { name = newName; }
-	void addChips(const int& amount) {chips += amount;}
 	int getChips() const { return chips; }
 	std::string getName() const { return name; }
 	std::vector<Card> getHand() const { return hand; }
