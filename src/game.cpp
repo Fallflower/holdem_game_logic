@@ -198,8 +198,11 @@ void Game::show() const {
     for (int i = 0; i < playerNum; i++) {
         if (i == active) std::cout << " *";
         else std::cout << "  ";
-        std::cout << std::left << std::setw(12) << players[i]->getName();
-        std::cout << " (" << pos[i] << "):   ";
+        // 玩家名
+        std::cout << (i==hpi) ? "HP"+std::to_string(i) : "BP"+std::to_string(i);
+        std::cout << " (" << pos[i] << ")";
+        // 筹码
+        std::cout << std::right << std::setw(5) << players[i]->getChips() << " BB:\t";
         for (int j = 0; j < 2; j++)
             std::cout << hands[i][j].toString() << ' ';
         std::cout << "\t" << chips[i][stateCode];
@@ -284,7 +287,7 @@ void Game::bet(const int& chip) {
 }
 
 void Game::toAct() { // 玩家筹码修改在Player的makeAction中处理
-    int betAmount = 0;
+    int betAmount = getPot();  // betAmount先传入底池大小，后返回玩家下注金额
     ACTION action = players[active]->makeAction(getChipsToCall(), betAmount);
     if (action == FOLD) {
         fold();
