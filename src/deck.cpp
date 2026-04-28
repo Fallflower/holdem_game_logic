@@ -54,7 +54,7 @@ std::string Deck::pubCardsStr(int stateCode) const {
 }
 
 std::string Deck::pubCardsColStr(int stateCode) const {
-    std::vector<std::string> temp = {"????", "????", "????", "????", "????"};
+    std::vector<std::string> temp = {"[??]", "[??]", "[??]", "[??]", "[??]"};
     switch (stateCode) {
     case 4: [[fallthrough]];
     case 3: temp[4] = pubCards_[4].toColorString(); [[fallthrough]];
