@@ -8,6 +8,7 @@
 class Deck {
 public:
     Deck();
+    Deck(const std::vector<Card>&);
 
     void shuffle();
     void deal(int playerNum, std::vector<std::vector<Card>>& hands);

@@ -98,6 +98,27 @@ std::vector<Card> Game::getFinalHands(const int& k) const {
     return temp;
 }
 
+std::vector<double> Game::calcEquity(const int& pi, const int& simulations) const {
+    std::vector<double> win(playerNum, 0.0);
+    Deck simDeck(hands[pi]);   // 构造一个牌堆，包含除了玩家pi的手牌以外的所有牌
+    //测试
+    std::cout << "Simulated deck size: " << simDeck.getPile().size() << std::endl;
+    for (int i = 0; i < simulations; i++) {
+        Deck tempDeck = simDeck;
+        tempDeck.shuffle();
+        std::vector<std::vector<Card>> simHands;
+        tempDeck.deal(playerNum, simHands);
+        simHands.insert(simHands.begin() + pi, hands[pi]); // 将玩家pi的手牌插入模拟手牌正确的位置
+        auto winners = checkWinner(simHands, tempDeck.getPubCards());
+        double share = 1.0 / winners.size();
+        for (auto j : winners)
+            win[j] += share;
+    }
+    for (int i = 0; i < playerNum; i++)
+        win[i] = 100.0 * win[i] / simulations;
+    return win;
+}
+
 std::vector<double> Game::calcWinRate(const int& simulations) const {
     std::vector<double> win(playerNum, 0.0);
     if (stateCode < 3) {
@@ -147,6 +168,26 @@ std::vector<double> Game::calcWinRate(const int& simulations) const {
     for (int i = 0; i < playerNum; i++)
         win[i] = 100.0 * win[i] / simulations;
     return win;
+}
+
+std::vector<int> Game::checkWinner(const std::vector<std::vector<Card>>& simHands, const std::vector<Card>& public_cards) const {
+    std::vector<int> res;
+    int bestRank = INT_MAX;
+    for (int i = 0; i < playerNum; i++) {
+        if (!ftag[i]) {
+            std::vector<Card> handCards = simHands[i];
+            handCards.insert(handCards.end(), public_cards.begin(), public_cards.end());
+            int rank = advancedEvaluate(handCards);
+            if (rank >= 0 && rank < bestRank) {
+                res.clear();
+                bestRank = rank;
+                res.push_back(i);
+            } else if (rank >= 0 && rank == bestRank) {
+                res.push_back(i);
+            }
+        }
+    }
+    return res;
 }
 
 std::vector<int> Game::checkWinner(std::vector<Card> public_cards) const {

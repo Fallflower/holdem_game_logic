@@ -9,6 +9,15 @@ Deck::Deck() {
             pile_.push_back(Card(CARDNUM(j), SUIT(i)));
 }
 
+// 构造一个除了输入的cards以外的牌的牌堆
+Deck::Deck(const std::vector<Card>& cards) {
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 13; j++)
+            if (std::find(cards.begin(), cards.end(), Card(CARDNUM(j), SUIT(i))) == cards.end())
+            // 如果当前牌不在输入的cards中，则加入牌堆
+                pile_.push_back(Card(CARDNUM(j), SUIT(i)));
+}
+
 void Deck::shuffle() {
     std::random_device seed;
     std::ranlux48 engine(seed());
